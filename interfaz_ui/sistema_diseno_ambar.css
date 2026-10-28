@@ -1,0 +1,203 @@
+/* 
+ * Sistema de Diseño Visual: Aurora Ámbar Sunlight (Aldraverso)
+ * Estilo: Claymorphism + Skeuomorphism Analógico + Bento Grid + Spatial UI
+ * Prohibición Absoluta: Cero Púrpura / Cero Violeta (Purple Ban) y Cero Vidrio (No Glassmorphism)
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Poppins:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap');
+
+:root {
+  /* Paleta Aurora Ámbar Sunlight (Fondo Espacial Profundo y Luz Solar Cálida) */
+  --fondo-espacial-0: #0c0b09; /* Negro carbón cálido profundo */
+  --fondo-espacial-1: #161410; /* Gris carbón cálido (Fondo principal de consola) */
+  --fondo-espacial-2: #211e18; /* Superficie Bento Grid elevada */
+  --fondo-espacial-3: #2d2921; /* Relieve superior de módulos */
+
+  /* Acentos de Luz Ámbar Sunlight */
+  --ambar-sol-primario: #f59e0b; /* Ámbar puro radiante */
+  --ambar-sol-brillante: #fbbf24; /* Luz de sol cenital */
+  --ambar-sol-calido: #d97706; /* Ámbar tostado profundo */
+  --ambar-luz-resplandor: rgba(245, 158, 11, 0.35);
+
+  /* Acentos secundarios técnicos (Lava Neón para alertas/clipping) */
+  --lava-neon: #ef4444;
+  --lava-resplandor: rgba(239, 68, 68, 0.4);
+  --esmeralda-ok: #10b981;
+
+  /* Tipografías del Aldraverso */
+  --fuente-titulos: 'Space Grotesk', -apple-system, sans-serif;
+  --fuente-ui: 'Inter', -apple-system, sans-serif;
+  --fuente-datos: 'JetBrains Mono', monospace;
+  --fuente-botones: 'Poppins', sans-serif;
+
+  /* Sombras y Volumen: Claymorphism (Sensación 3D Inflada / Suave) */
+  --sombra-clay-contenedor: 
+    8px 8px 16px rgba(0, 0, 0, 0.65),
+    -4px -4px 12px rgba(255, 255, 255, 0.03),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.05),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.45);
+
+  --sombra-clay-boton-activo:
+    inset 3px 3px 6px rgba(0, 0, 0, 0.6),
+    inset -2px -2px 4px rgba(255, 255, 255, 0.1),
+    0px 0px 12px var(--ambar-luz-resplandor);
+
+  /* Sombras y Textura: Esqueumorfismo Analógico (Biselado Metálico / Muesca Táctil) */
+  --bisel-fader-canal:
+    inset 4px 0px 8px rgba(0, 0, 0, 0.8),
+    inset -4px 0px 8px rgba(0, 0, 0, 0.8),
+    inset 0px 2px 4px rgba(0, 0, 0, 0.9),
+    0px 1px 1px rgba(255, 255, 255, 0.08);
+
+  --perilla-analoga-relieve:
+    0px 6px 12px rgba(0, 0, 0, 0.75),
+    inset 0px 2px 3px rgba(255, 255, 255, 0.15),
+    inset 0px -3px 5px rgba(0, 0, 0, 0.85);
+}
+
+/* Reinicio y Estructura Global */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+}
+
+body {
+  background-color: var(--fondo-espacial-0);
+  color: #f3f4f6;
+  font-family: var(--fuente-ui);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ====================================================
+   BENTO GRID ESPACIAL (Spatial UI)
+   ==================================================== */
+.contenedor-espacial-bento {
+  display: grid;
+  grid-template-columns: 320px 1fr 280px;
+  grid-template-rows: 80px 1fr 180px;
+  gap: 20px;
+  padding: 24px;
+  height: 100vh;
+  perspective: 1200px;
+}
+
+.tarjeta-bento-clay {
+  background: var(--fondo-espacial-1);
+  border-radius: 28px;
+  box-shadow: var(--sombra-clay-contenedor);
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.tarjeta-bento-clay:hover {
+  transform: translateZ(8px) translateY(-2px);
+  box-shadow: 
+    12px 14px 24px rgba(0, 0, 0, 0.75),
+    -4px -4px 12px rgba(255, 255, 255, 0.04),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.06),
+    inset -4px -4px 8px rgba(0, 0, 0, 0.45);
+}
+
+/* Encabezados y Tipografía */
+.titulo-espacial {
+  font-family: var(--fuente-titulos);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.titulo-espacial::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 24px;
+  background: linear-gradient(180deg, var(--ambar-sol-brillante), var(--ambar-sol-calido));
+  border-radius: 4px;
+  box-shadow: 0 0 10px var(--ambar-luz-resplandor);
+}
+
+.indicador-tecnico-hz {
+  font-family: var(--fuente-datos);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ambar-sol-brillante);
+  background: var(--fondo-espacial-0);
+  padding: 4px 10px;
+  border-radius: 8px;
+  box-shadow: inset 2px 2px 4px rgba(0,0,0,0.8);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+
+/* ====================================================
+   ESQUEUMORFISMO ANALÓGICO: FADERS Y PERILLAS
+   ==================================================== */
+.canal-fader-analogo {
+  width: 48px;
+  height: 100%;
+  background: var(--fondo-espacial-0);
+  border-radius: 24px;
+  box-shadow: var(--bisel-fader-canal);
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.capuchon-fader-esqueumorfico {
+  width: 40px;
+  height: 52px;
+  background: linear-gradient(180deg, #38332a 0%, #211e18 50%, #181510 100%);
+  border-radius: 12px;
+  box-shadow: var(--perilla-analoga-relieve);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 2px solid rgba(0, 0, 0, 0.9);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Línea indicadora dorada / ámbar del fader */
+.linea-guia-ambar {
+  width: 28px;
+  height: 3px;
+  background: var(--ambar-sol-brillante);
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--ambar-sol-brillante);
+}
+
+/* Botón Claymorphism Cálido y Redondeado */
+.boton-clay-ambar {
+  font-family: var(--fuente-botones);
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: linear-gradient(135deg, var(--ambar-sol-brillante), var(--ambar-sol-calido));
+  color: #000000;
+  padding: 14px 28px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 
+    0px 6px 14px var(--ambar-luz-resplandor),
+    inset 2px 2px 4px rgba(255, 255, 255, 0.4),
+    inset -2px -2px 6px rgba(0, 0, 0, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.boton-clay-ambar:active {
+  transform: scale(0.96) translateY(2px);
+  box-shadow: var(--sombra-clay-boton-activo);
+}

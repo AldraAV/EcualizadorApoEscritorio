@@ -1,0 +1,558 @@
+<!-- ===== res/layout-sw4dp-v13/activity_peq_main.xml ===== -->
+<merge>
+  <com.maxmpz.equalizer.widget.PeqCoreConnectionBehavior>
+  </com.maxmpz.equalizer.widget.PeqCoreConnectionBehavior>
+  <com.maxmpz.equalizer.widget.PeqTopNavSceneFastLayout id="@0x7F0D0207" style="?0x7F0103CC">
+    <com.maxmpz.widget.player.MilkWidget id="@0x7F0D0018" style="?0x7F0103CD">
+    </com.maxmpz.widget.player.MilkWidget>
+    <com.maxmpz.widget.base.PrivateNonSceneFastLayout id="@0x7F0D02AE" style="?0x7F0106F9">
+      <com.maxmpz.widget.base.FastLayout style="?0x7F010421">
+        <include layout="@0x7F0400C5">
+        </include>
+        <include layout="@0x7F040055">
+        </include>
+        <com.maxmpz.widget.base.BusAAScrollingBehavior msgId="@0x7F0D0055" stateId="@0x7F0D0088" stateBusId="@0x7F0D015D" onPosChangedMsgId="@0x7F0D0051" style="?0x7F010422">
+        </com.maxmpz.widget.base.BusAAScrollingBehavior>
+      </com.maxmpz.widget.base.FastLayout>
+    </com.maxmpz.widget.base.PrivateNonSceneFastLayout>
+    <SceneParams visibility="0x0" alpha="1.00" scene="@0x7F0D002F" recalcChildren="0x2" style="?0x7F0106FA">
+    </SceneParams>
+    <SceneParams visibility="0x0" alpha="0.25" scene="@0x7F0D002E" recalcChildren="0x2" style="?0x7F0106FA">
+    </SceneParams>
+    <SceneParams visibility="0x2" scene="@0x7F0D002D">
+    </SceneParams>
+    <com.maxmpz.widget.base.LoadableBehavior id="@0x7F0D0574" layout="@0x7F040099" loadForScene="@0x7F0D002F" loadForScene_2="@0x7F0D002D" loadForScene_3="@0x7F0D002E" insertAt="0xFFFFFFFE" unload="0x1">
+    </com.maxmpz.widget.base.LoadableBehavior>
+    <com.maxmpz.widget.player.AABounds id="@0x7F0D0209" style="?0x7F0103CF">
+    </com.maxmpz.widget.player.AABounds>
+    <com.maxmpz.widget.base.InvisibleView id="@0x7F0D0023" style="?0x7F0103DA">
+    </com.maxmpz.widget.base.InvisibleView>
+    <include layout="@0x7F040056">
+    </include>
+    <com.maxmpz.widget.base.MenuPlaceholderLayout id="@0x7F0D0017" privateScene="true" style="?0x7F0103E0">
+    </com.maxmpz.widget.base.MenuPlaceholderLayout>
+    <include layout="@0x7F04008F">
+    </include>
+    <include layout="@0x7F0400D0">
+    </include>
+    <SceneParams scene="@0x7F0D002F" scene_2="@0x7F0D002D" baseScene="0x0">
+    </SceneParams>
+    <SceneParams scene="@0x7F0D002E" baseScene="0x0">
+    </SceneParams>
+    <include layout="@0x7F0400B5">
+    </include>
+    <SceneParams scene="@0x7F0D002F" scene_2="@0x7F0D002D" baseScene="0x0">
+    </SceneParams>
+    <SceneParams scene="@0x7F0D002E" baseScene="0x0">
+    </SceneParams>
+    <com.maxmpz.widget.base.FitsStatusBarView id="@0x7F0D001A" style="?0x7F0103E1">
+    </com.maxmpz.widget.base.FitsStatusBarView>
+    <SceneParams scene="@0x7F0D002F" scene_2="@0x7F0D002D" baseScene="0x0">
+    </SceneParams>
+    <SceneParams scene="@0x7F0D002E" baseScene="0x0">
+    </SceneParams>
+    <com.maxmpz.widget.base.FitsNavigationBarView id="@0x7F0D001B" style="?0x7F0103E2">
+    </com.maxmpz.widget.base.FitsNavigationBarView>
+    <SceneParams scene="@0x7F0D002F" scene_2="@0x7F0D002D" baseScene="0x0" applyViewParams="true">
+    </SceneParams>
+    <SceneParams scene="@0x7F0D002E" baseScene="0x0">
+    </SceneParams>
+  </com.maxmpz.equalizer.widget.PeqTopNavSceneFastLayout>
+</merge>
+
+<!-- ===== res/layout-sw2dp-v13/merge_eq_layout.xml ===== -->
+<merge>
+  <com.maxmpz.widget.base.PrivateNonSceneFastLayout id="@0x7F0D02AE" style="?0x7F0103D2">
+    <com.maxmpz.widget.base.FastLayout id="@0x7F0D01F5" style="?0x7F0103D3">
+      <com.maxmpz.widget.base.BusSelectableBehavior msgId="@0x7F0D0055" stateId="@0x7F0D0088" stateBusId="@0x7F0D015D">
+      </com.maxmpz.widget.base.BusSelectableBehavior>
+      <com.maxmpz.widget.base.BusActionButton drawable="?0x7F010122" contentDescription="@0x7F0801CB" busId="@0x7F0D015D" msgId="@0x7F0D0051" arg1="@0x7F0C000E" style="?0x7F0103D4">
+      </com.maxmpz.widget.base.BusActionButton>
+      <com.maxmpz.widget.base.BusActionButton drawable="?0x7F010123" contentDescription="@0x7F080985" busId="@0x7F0D015D" msgId="@0x7F0D0051" arg1="@0x7F0C000F" style="?0x7F0103D4">
+      </com.maxmpz.widget.base.BusActionButton>
+      <com.maxmpz.widget.base.BusActionButton drawable="?0x7F010124" contentDescription="@0x7F08082F" busId="@0x7F0D015D" msgId="@0x7F0D0051" arg1="@0x7F0C0010" style="?0x7F0103D4">
+      </com.maxmpz.widget.base.BusActionButton>
+    </com.maxmpz.widget.base.FastLayout>
+    <com.maxmpz.widget.base.FastLayout style="?0x7F010421">
+      <include layout="@0x7F0400C5">
+      </include>
+      <include layout="@0x7F040085">
+      </include>
+      <include layout="@0x7F040084">
+      </include>
+      <com.maxmpz.widget.base.BusAAScrollingBehavior msgId="@0x7F0D0055" stateId="@0x7F0D0088" stateBusId="@0x7F0D015D" onPosChangedMsgId="@0x7F0D0051" style="?0x7F010422">
+      </com.maxmpz.widget.base.BusAAScrollingBehavior>
+    </com.maxmpz.widget.base.FastLayout>
+  </com.maxmpz.widget.base.PrivateNonSceneFastLayout>
+  <SceneParams visibility="0x0" scene="@0x7F0D0030">
+  </SceneParams>
+  <SceneParams visibility="0x2" scene="@0x7F0D0031" scene_2="@0x7F0D0032" scene_3="@0x7F0D002D" scene_4="@0x7F0D002C" scene_5="@0x7F0D002F">
+  </SceneParams>
+  <SceneParams visibility="0x2" scene="@0x7F0D06D8">
+  </SceneParams>
+  <SceneParams visibility="0x2" scene="@0x7F0D002E">
+  </SceneParams>
+</merge>
+
+<!-- ===== res/layout-sw2dp-v13/merge_eq_equalizer_tab_common.xml ===== -->
+<com.maxmpz.widget.base.SceneFastLayout id="@0x7F0D07AC" enableStateAnim="true" privateScene="true" style="?0x7F010423">
+  <com.maxmpz.widget.player.EqKnobsList id="@0x7F0D02A2" listScroller="@0x7F0D02A4" style="?0x7F010424">
+  </com.maxmpz.widget.player.EqKnobsList>
+  <com.maxmpz.widget.player.MilkFRS id="@0x7F0D012F" contentDescription="@0x7F08024C" style="?0x7F010429">
+  </com.maxmpz.widget.player.MilkFRS>
+  <com.maxmpz.widget.player.FrequencyResponseScroller id="@0x7F0D02A4" contentDescription="@0x7F08024C" importantForAccessibility="0x1" useDSPBus="true" style="?0x7F010428">
+  </com.maxmpz.widget.player.FrequencyResponseScroller>
+  <com.maxmpz.widget.base.BusActionPopupLayout id="@0x7F0D02A5" importantForAccessibility="0x2" busId="@0x7F0D0036" msgId="@0x7F0D0102" menuItemsLayout="@0x7F040080" firstPressToast="@0x7F080302" style="?0x7F01042A">
+    <com.maxmpz.widget.player.BusStatusText id="@0x7F0D000B" updateMsgId="@0x7F0D00F1" stateBusId="@0x7F0D0035" updateMsgId_2="@0x7F0D00F7" updateMsgId_3="@0x7F0D00F3" updateMsgId_4="@0x7F0D00F4" updateMsgId_5="@0x7F0D00F5" updateMsgId_6="@0x7F0D00F9" labelStateId="@0x7F0D012C" debounceDelay="0x64" style="?0x7F01042C">
+    </com.maxmpz.widget.player.BusStatusText>
+    <SceneParams visibility="0x2" scene="@0x7F0D013D">
+    </SceneParams>
+    <SceneParams visibility="0x0" scene="@0x7F0D013E">
+    </SceneParams>
+  </com.maxmpz.widget.base.BusActionPopupLayout>
+  <SceneParams scene="@0x7F0D013D" style="?0x7F01042B">
+  </SceneParams>
+  <include layout="@0x7F0400E0">
+  </include>
+  <com.maxmpz.widget.player.EqPresetPopupListLayout id="@0x7F0D02A9" contentDescription="@0x7F0807C4" disableParentLayoutForPopup="false" style="?0x7F010430">
+    <com.maxmpz.widget.player.BusStatusText id="@0x7F0D000B" text="@0x7F0807C4" updateMsgId="@0x7F0D00F3" stateBusId="@0x7F0D0035" updateMsgId_2="@0x7F0D00F1" labelStateId="@0x7F0D0118" iconStateId="@0x7F0D0428" defaultTextOnNoState="true" style="?0x7F010432">
+    </com.maxmpz.widget.player.BusStatusText>
+    <SceneParams visibility="0x2" scene="@0x7F0D013D">
+    </SceneParams>
+    <SceneParams visibility="0x0" scene="@0x7F0D013E">
+    </SceneParams>
+  </com.maxmpz.widget.player.EqPresetPopupListLayout>
+  <SceneParams scene="@0x7F0D013D" style="?0x7F010431">
+  </SceneParams>
+  <com.maxmpz.widget.base.BusActionPopupLayout id="@0x7F0D0567" contentDescription="@0x7F080328" busId="@0x7F0D0036" msgId="@0x7F0D0102" menuItemsLayout="@0x7F0400C4" style="?0x7F0100AF">
+    <com.maxmpz.widget.base.FastTextView id="@0x7F0D01AC" style="?0x7F010833">
+    </com.maxmpz.widget.base.FastTextView>
+    <SceneParams visibility="0x2" scene="@0x7F0D013D">
+    </SceneParams>
+    <SceneParams visibility="0x0" scene="@0x7F0D013E">
+    </SceneParams>
+  </com.maxmpz.widget.base.BusActionPopupLayout>
+  <SceneParams scene="@0x7F0D013D" style="?0x7F010835">
+  </SceneParams>
+  <com.maxmpz.widget.base.InvisibleView id="@0x7F0D059F" style="?0x7F01087A">
+  </com.maxmpz.widget.base.InvisibleView>
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D0714" style="?0x7F010750">
+    <com.maxmpz.widget.player.DSPToneRoundKnobLayout id="@0x7F0D02AC" param="@0x7F0D0106" updateMsgId="@0x7F0D00F3" enablingParam="@0x7F0D0109" labelText="@0x7F0800B7" style="?0x7F010435">
+    </com.maxmpz.widget.player.DSPToneRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPToneRoundKnobLayout id="@0x7F0D02AD" param="@0x7F0D0107" updateMsgId="@0x7F0D00F3" enablingParam="@0x7F0D0109" labelText="@0x7F080948" style="?0x7F010436">
+    </com.maxmpz.widget.player.DSPToneRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+</com.maxmpz.widget.base.SceneFastLayout>
+
+<!-- ===== res/layout-sw4dp-v13/merge_eq_equalizer_buttons.xml ===== -->
+<merge>
+  <com.maxmpz.widget.base.BusStateEnabledActionButton id="@0x7F0D0394" text="@0x7F0801BD" drawable="@0x7F020378" busId="@0x7F0D0034" msgId="@0x7F0D0407" stateId="@0x7F0D03FF" stateBusId="@0x7F0D0033" enableByState="0x2" stateMatchArg="0x1" alwaysCheckState="true" style="?0x7F0106FE">
+  </com.maxmpz.widget.base.BusStateEnabledActionButton>
+  <com.maxmpz.widget.player.EqButtonsLayout id="@0x7F0D059E" style="@0x7F0E073D">
+  </com.maxmpz.widget.player.EqButtonsLayout>
+  <SceneParams scene="0x0" baseScene="0x0" recalcChildren="0x2">
+  </SceneParams>
+  <com.maxmpz.widget.player.LoadableDraggableButtonsBehavior id="@0x7F0D049F" style="@0x7F0E0B21">
+  </com.maxmpz.widget.player.LoadableDraggableButtonsBehavior>
+</merge>
+
+<!-- ===== res/layout-sw2dp-v13/merge_eq_vol_tab.xml ===== -->
+<com.maxmpz.widget.base.SceneFastLayout enableStateAnim="true" privateScene="true" style="?0x7F010423">
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02BB" style="?0x7F010437">
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D02BC" param="@0x7F0D0114" updateMsgId="@0x7F0D00F4" enablingParam="@0x7F0D05AF" snapTo="0.50" valueFormat="@0x7F08020C" valueFormatMin="-1.00" valueFormatMax="1.00" valueFormatMid="0.00" valueFormatMidPos="0.50" leftLabelText="@0x7F0800AB" rightLabelText="@0x7F0800AC" labelText="@0x7F0800AA" arcStartPoint="0.50" style="?0x7F01043A">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D02BD" param="@0x7F0D0115" updateMsgId="@0x7F0D00F4" enablingParam="@0x7F0D05AF" valueFormat="@0x7F0801DC" valueFormatMin="0.00" valueFormatMax="100.00" labelText="@0x7F0808E5" style="?0x7F01043B">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02BE" style="?0x7F010438">
+    <com.maxmpz.widget.player.DSPCheckBox id="@0x7F0D02BF" text="@0x7F08092F" param="@0x7F0D010B" updateMsgId="@0x7F0D03F4" enablingParam="@0x7F0D05AF" style="?0x7F01043C">
+    </com.maxmpz.widget.player.DSPCheckBox>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D02C0" contentDescription="@0x7F08092F" param="@0x7F0D0116" updateMsgId="@0x7F0D03F4" enablingParam="@0x7F0D010B" snapTo="0.50" dependentLabel="@0x7F0D02C1" dependentLabel2="@0x7F0D02C2" valueFormat="@0x7F08020D" valueFormatMin="0.50" valueFormatMax="3.00" valueFormatMid="1.00" valueFormatMidPos="0.50" leftLabelText="@0x7F080930" rightLabelText="@0x7F080932" labelStyle="@0x00000000" labelText="@0x7F08092F" arcStartPoint="0.50" style="?0x7F01043D">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.base.BusActionButton id="@0x7F0D068A" text="+" busId="@0x7F0D0036" msgId="@0x7F0D03F5" arg1="0x1" disableForStateBusId="@0x7F0D0035" disableForStateMsgId="@0x7F0D03F4" enableForStateId="@0x7F0D03F6" style="?0x7F010699">
+    </com.maxmpz.widget.base.BusActionButton>
+    <com.maxmpz.widget.base.BusActionButton id="@0x7F0D068B" text="-" busId="@0x7F0D0036" msgId="@0x7F0D03F5" arg1="0xFFFFFFFF" disableForStateBusId="@0x7F0D0035" disableForStateMsgId="@0x7F0D03F4" enableForStateId="@0x7F0D03F7" style="?0x7F01069A">
+    </com.maxmpz.widget.base.BusActionButton>
+  </com.maxmpz.widget.base.FastLayout>
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02C3" style="?0x7F010439">
+    <com.maxmpz.widget.player.DSPCheckBox id="@0x7F0D02C4" text="@0x7F080349" param="@0x7F0D010C" updateMsgId="@0x7F0D00F4" enablingParam="@0x7F0D05AF" style="?0x7F01043E">
+    </com.maxmpz.widget.player.DSPCheckBox>
+    <com.maxmpz.widget.player.DSPCheckBox id="@0x7F0D02C5" text="@0x7F08043C" param="@0x7F0D0110" updateMsgId="@0x7F0D00F4" enablingParam="@0x7F0D0111" longPressCmdId="@0x7F0D0103" toastOnPress="@0x7F080302" toastHeaderOnPress="@0x7F08043C" style="?0x7F01043F">
+    </com.maxmpz.widget.player.DSPCheckBox>
+    <com.maxmpz.widget.base.BusActionButton id="@0x7F0D02C6" text="@0x7F0807FF" busId="@0x7F0D0036" msgId="@0x7F0D00FE" confirmTitle="@0x7F0807FF" confirmText="@0x7F080804" disableForStateBusId="@0x7F0D0035" disableForStateMsgId="@0x7F0D00F1" enableForStateId="@0x7F0D05AF" style="?0x7F010440">
+    </com.maxmpz.widget.base.BusActionButton>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D02C7" param="@0x7F0D0117" updateMsgId="@0x7F0D00F4" enablingParam="@0x7F0D05B3" rounding="100.50" dspParamDef="@0x7F0D0117" style="?0x7F010441">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+</com.maxmpz.widget.base.SceneFastLayout>
+
+<!-- ===== res/layout-sw2dp-v13/merge_eq_reverb_tab.xml ===== -->
+<com.maxmpz.widget.base.SceneFastLayout clipChildren="false" enableStateAnim="true" privateScene="true" style="?0x7F010423">
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02B4" style="?0x7F010442">
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D0124" param="@0x7F0D0124" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F080827" dialogPrecision="0x2" style="?0x7F010445">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D011F" param="@0x7F0D011F" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F080829" dialogPrecision="0x2" style="?0x7F010446">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D0120" param="@0x7F0D0120" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F080828" dialogPrecision="0x2" style="?0x7F010447">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02B5" style="?0x7F010443">
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D0121" param="@0x7F0D0121" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F08082B" dialogPrecision="0x2" style="?0x7F010448">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D0123" param="@0x7F0D0123" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F08082C" dialogPrecision="0x2" style="?0x7F010449">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D011E" param="@0x7F0D011E" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F08082E" dialogPrecision="0x2" style="?0x7F01044A">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+  <com.maxmpz.widget.base.FastLayout id="@0x7F0D02B6" style="?0x7F010444">
+    <com.maxmpz.widget.player.DSPCheckBox id="@0x7F0D02B7" text="@0x7F080826" param="@0x7F0D010D" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D05AF" style="?0x7F01044C">
+    </com.maxmpz.widget.player.DSPCheckBox>
+    <com.maxmpz.widget.player.ReverbPresetPopupListLayout id="@0x7F0D02B8" style="?0x7F01044D">
+      <com.maxmpz.widget.player.BusStatusText id="@0x7F0D000B" text="@0x7F0807C4" updateMsgId="@0x7F0D00F5" stateBusId="@0x7F0D0035" updateMsgId_2="@0x7F0D00F1" labelStateId="@0x7F0D011B" defaultTextOnNoState="true" style="?0x7F01044F">
+      </com.maxmpz.widget.player.BusStatusText>
+      <SceneParams visibility="0x2" scene="@0x7F0D013D">
+      </SceneParams>
+      <SceneParams visibility="0x0" scene="@0x7F0D013E">
+      </SceneParams>
+    </com.maxmpz.widget.player.ReverbPresetPopupListLayout>
+    <SceneParams scene="@0x7F0D013D" style="?0x7F01044E">
+    </SceneParams>
+    <com.maxmpz.widget.base.BusActionButton id="@0x7F0D02B9" text="@0x7F08083E" busId="@0x7F0D0037" msgId="@0x7F0D0080" disableForStateBusId="@0x7F0D0035" disableForStateMsgId="@0x7F0D00F1" enableForStateId="@0x7F0D05AF" style="?0x7F010450">
+    </com.maxmpz.widget.base.BusActionButton>
+    <com.maxmpz.widget.base.BusActionButton id="@0x7F0D02BA" text="@0x7F0807FF" busId="@0x7F0D0036" msgId="@0x7F0D00FD" confirmTitle="@0x7F0807FF" confirmText="@0x7F080804" disableForStateBusId="@0x7F0D0035" disableForStateMsgId="@0x7F0D00F1" enableForStateId="@0x7F0D05AF" style="?0x7F010451">
+    </com.maxmpz.widget.base.BusActionButton>
+    <com.maxmpz.widget.player.DSPRoundKnobLayout id="@0x7F0D0122" param="@0x7F0D0122" updateMsgId="@0x7F0D00F5" enablingParam="@0x7F0D010D" valueFormat="@0x7F08020C" labelText="@0x7F08082A" dialogPrecision="0x2" style="?0x7F01044B">
+    </com.maxmpz.widget.player.DSPRoundKnobLayout>
+  </com.maxmpz.widget.base.FastLayout>
+</com.maxmpz.widget.base.SceneFastLayout>
+
+<!-- ===== res/layout-sw2dp-v13/merge_eqbuttons_edit.xml ===== -->
+<merge>
+  <com.maxmpz.widget.base.Shim style="@0x7F0E07BF">
+  </com.maxmpz.widget.base.Shim>
+  <com.maxmpz.widget.base.SceneFastLayout style="@0x7F0E0741">
+    <com.maxmpz.widget.base.FastLayout id="@0x7F0D0729" style="@0x7F0E07A4">
+      <com.maxmpz.widget.base.BusActionButton contentDescription="@0x7F08086D" busId="@0x7F0D015C" msgId="@0x7F0D003E" string="peq_ui#edit_eq_buttons" style="@0x7F0E07AB">
+      </com.maxmpz.widget.base.BusActionButton>
+      <SceneParams scene="@0x7F0D0726">
+      </SceneParams>
+      <com.maxmpz.widget.base.FastLayout id="@0x7F0D05D5" style="@0x7F0E07BC">
+        <com.maxmpz.widget.base.BusCheckBox id="@0x7F0D07A7" text="@0x7F08094A" stateBusId="@0x7F0D059E" booleanStateId="@0x7F0D074E" stateMsgId="@0x7F0D074E" checkCmdId="@0x7F0D0540" uncheckCmdId="@0x7F0D0540" sendBooleanArg="0x1" style="@0x7F0E0742">
+        </com.maxmpz.widget.base.BusCheckBox>
+        <SceneParams scene="@0x7F0D0726">
+        </SceneParams>
+      </com.maxmpz.widget.base.FastLayout>
+      <SceneParams scene="@0x7F0D0726">
+      </SceneParams>
+      <com.maxmpz.widget.base.FastLayout style="@0x7F0E07BE">
+        <com.maxmpz.widget.base.SceneFastLayout id="@0x7F0D0594" style="@0x7F0E07A0">
+          <com.maxmpz.widget.player.DraggableSourceBehavior draggableButtonContainerStyle="@0x7F0E0743" draggableButtonLabelStyle="@0x7F0E0704" draggableButtons="@0x7F0F000F" draggingContainer="@0x7F0D0207" draggingTarget="@0x7F0D059E">
+          </com.maxmpz.widget.player.DraggableSourceBehavior>
+        </com.maxmpz.widget.base.SceneFastLayout>
+        <SceneParams scene="@0x7F0D0726">
+        </SceneParams>
+        <com.maxmpz.widget.base.ScrollingBehavior disallowParentScroll="true" noScrollbars="true">
+        </com.maxmpz.widget.base.ScrollingBehavior>
+      </com.maxmpz.widget.base.FastLayout>
+      <SceneParams scene="@0x7F0D0726">
+      </SceneParams>
+      <TextView id="@0x7F0D0427" text="@0x7F08028A" style="@0x7F0E07BD">
+      </TextView>
+      <SceneParams scene="@0x7F0D0726">
+      </SceneParams>
+    </com.maxmpz.widget.base.FastLayout>
+    <SceneParams scene="@0x7F0D0726" style="@0x7F0E07A5">
+    </SceneParams>
+    <SceneParams forId="0x0" scene="0x0" scene_2="@0x7F0D002F" scene_3="@0x7F0D002E" scene_4="@0x7F0D002D" recalcChildren="0x2">
+    </SceneParams>
+  </com.maxmpz.widget.base.SceneFastLayout>
+</merge>
+
+<!-- ===== res/layout-sw2dp-v13/merge_navbar.xml ===== -->
+<merge>
+  <com.maxmpz.widget.base.SceneFastLayout id="@0x7F0D02D6" privateScene="true" style="?0x7F0103DB">
+    <com.maxmpz.widget.base.Shim id="@0x7F0D0149" style="?0x7F0103B7">
+    </com.maxmpz.widget.base.Shim>
+    <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D014F" scene_2="@0x7F0D0150" scene_3="@0x7F0D06DB">
+    </com.maxmpz.widget.base.SceneParams>
+    <com.maxmpz.widget.base.SceneParams visibility="0x2" scene="@0x7F0D014E" scene_2="@0x7F0D06DA">
+    </com.maxmpz.widget.base.SceneParams>
+    <com.maxmpz.audioplayer.widget.Navbar id="@0x7F0D0013" style="?0x7F0103B8">
+      <com.maxmpz.widget.player.NavbarExtension id="@0x7F0D014A" style="?0x7F0103B9">
+        <com.maxmpz.widget.base.BusActionButton contentDescription="@0x7F08006C" busId="@0x7F0D015C" msgId="@0x7F0D003E" string="general" style="?0x7F0103BA">
+        </com.maxmpz.widget.base.BusActionButton>
+        <com.maxmpz.widget.player.BusStatusTextButton updateMsgId="@0x7F0D018B" stateBusId="@0x7F0D015B" labelStateId="@0x7F0D0420" iconStateId="@0x7F0D043C" style="?0x7F0103BB">
+        </com.maxmpz.widget.player.BusStatusTextButton>
+        <com.maxmpz.audioplayer.widget.MediaRouteButton style="?0x7F0105B4">
+        </com.maxmpz.audioplayer.widget.MediaRouteButton>
+        <com.maxmpz.widget.base.BusActionButton id="@0x7F0D0546" longClickable="true" text="@0x7F08086D" drawable="?0x7F010825" contentDescription="@0x7F0805F7" busId="@0x7F0D015C" msgId="@0x7F0D003E" longPressMsgId="@0x7F0D03B1" style="?0x7F010514">
+        </com.maxmpz.widget.base.BusActionButton>
+        <com.maxmpz.audioplayer.widget.NavExtSettingsTags style="?0x7F010858">
+        </com.maxmpz.audioplayer.widget.NavExtSettingsTags>
+        <com.maxmpz.widget.base.BusActionButton text="@0x7F08002A" drawable="?0x7F0103BD" busId="@0x7F0D015C" msgId="@0x7F0D03BE" string="activity/dialogs.ChangelogActivity" style="?0x7F010514">
+        </com.maxmpz.widget.base.BusActionButton>
+        <com.maxmpz.widget.base.BusActionButton text="@0x7F08027F" drawable="?0x7F0103BE" busId="@0x7F0D015D" msgId="@0x7F0D022D" style="?0x7F010514">
+        </com.maxmpz.widget.base.BusActionButton>
+      </com.maxmpz.widget.player.NavbarExtension>
+      <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D014F" scene_2="@0x7F0D0150" scene_3="@0x7F0D06DB">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.base.SceneParams visibility="0x2" scene="@0x7F0D014E" scene_2="@0x7F0D06DA">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.list.PowerList id="@0x7F0D014D" style="?0x7F0103BF">
+      </com.maxmpz.widget.list.PowerList>
+      <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D014E" scene_2="@0x7F0D0150" scene_3="@0x7F0D06DA" scene_4="@0x7F0D06DB">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.base.SceneParams visibility="0x2" scene="@0x7F0D014F">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.player.Seek id="@0x7F0D067F" style="?0x7F01007A">
+      </com.maxmpz.widget.player.Seek>
+      <StateAnimParams stateAnim="@0x7F0D008C" style="?0x7F010634">
+      </StateAnimParams>
+      <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D06DA" scene_2="@0x7F0D06DB">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.base.SceneParams visibility="0x2" scene="@0x7F0D014F" scene_2="@0x7F0D014E" scene_3="@0x7F0D0150">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.base.FastLayout id="@0x7F0D014B" style="?0x7F0103C0">
+        <com.maxmpz.widget.base.FastButton id="@0x7F0D004D" longClickable="true" drawable="?0x7F01011E" contentDescription="@0x7F0802DD" style="?0x7F0103C1">
+        </com.maxmpz.widget.base.FastButton>
+        <com.maxmpz.widget.base.FastButton id="@0x7F0D0051" longClickable="true" drawable="?0x7F01011F" contentDescription="@0x7F08024A" style="?0x7F0103C1">
+        </com.maxmpz.widget.base.FastButton>
+        <com.maxmpz.widget.base.FastButton id="@0x7F0D004F" drawable="?0x7F010120" contentDescription="@0x7F08084A" style="?0x7F0103C1">
+        </com.maxmpz.widget.base.FastButton>
+        <com.maxmpz.widget.base.FastButton id="@0x7F0D0050" longClickable="true" drawable="?0x7F010121" contentDescription="@0x7F080574" style="?0x7F0103C1">
+        </com.maxmpz.widget.base.FastButton>
+      </com.maxmpz.widget.base.FastLayout>
+      <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D014E" scene_2="@0x7F0D0150" scene_3="@0x7F0D06DA" scene_4="@0x7F0D06DB">
+      </com.maxmpz.widget.base.SceneParams>
+      <com.maxmpz.widget.base.SceneParams visibility="0x0" scene="@0x7F0D014F">
+      </com.maxmpz.widget.base.SceneParams>
+    </com.maxmpz.audioplayer.widget.Navbar>
+    <com.maxmpz.widget.base.SceneParams scene="@0x7F0D014F" style="?0x7F0103C2">
+    </com.maxmpz.widget.base.SceneParams>
+    <com.maxmpz.widget.base.SceneParams scene="@0x7F0D014E" scene_2="@0x7F0D0150" scene_3="@0x7F0D06DA" scene_4="@0x7F0D06DB" style="?0x7F0103C3">
+    </com.maxmpz.widget.base.SceneParams>
+  </com.maxmpz.widget.base.SceneFastLayout>
+  <SceneParams visibility="0x2" scene="@0x7F0D002D">
+  </SceneParams>
+  <SceneParams visibility="0x0" alpha="0.55" scene="@0x7F0D002E">
+  </SceneParams>
+  <SceneParams visibility="0x0" alpha="1.00" scene="@0x7F0D002F" scene_2="@0x7F0D002C" scene_3="@0x7F0D0030" scene_4="@0x7F0D0031" scene_5="@0x7F0D0032">
+  </SceneParams>
+  <SceneParams visibility="0x0" alpha="1.00" scene="@0x7F0D06D8">
+  </SceneParams>
+</merge>
+
+<!-- ===== res/layout-sw2dp-v13/merge_vis_panel.xml ===== -->
+<merge>
+  <com.maxmpz.widget.base.Shim id="@0x7F0D02E4" style="?0x7F010419">
+  </com.maxmpz.widget.base.Shim>
+  <com.maxmpz.widget.base.SceneFastLayout id="@0x7F0D02E5" enableStateAnim="true" privateScene="true" style="?0x7F010418">
+    <com.maxmpz.audioplayer.widget.VisPanelFrame id="@0x7F0D02E6" style="?0x7F01041A">
+      <com.maxmpz.widget.base.FastButton id="@0x7F0D02E7" contentDescription="@0x7F080205" style="?0x7F01041B">
+      </com.maxmpz.widget.base.FastButton>
+      <com.maxmpz.widget.base.BusActionButton id="@0x7F0D02E9" contentDescription="@0x7F08086D" busId="@0x7F0D015C" msgId="@0x7F0D003E" string="vis" style="?0x7F01041C">
+      </com.maxmpz.widget.base.BusActionButton>
+      <SceneParams visibility="0x0" scene="@0x7F0D02E8">
+      </SceneParams>
+      <com.maxmpz.widget.base.BusSelectablePopupButtonLayout id="@0x7F0D071C" contentDescription="@0x7F0808DB" stateId="@0x7F0D00C8" stateBusId="@0x7F0D0033" buttonsMsgId="@0x7F0D00EB" buttonsBusId="@0x7F0D0034" buttonsLabels="@0x7F0F0021" buttonsDrawables="@0x7F0F0013" style="?0x7F01041D">
+      </com.maxmpz.widget.base.BusSelectablePopupButtonLayout>
+      <SceneParams scene="@0x7F0D013D" style="?0x7F0103AE">
+      </SceneParams>
+      <SceneParams visibility="0x0" scene="@0x7F0D02E8">
+      </SceneParams>
+      <EditText id="@0x7F0D02EA" hint="@0x7F08084A" inputType="0x1" importantForAutofill="0x2" style="?0x7F01041E">
+      </EditText>
+      <SceneParams visibility="0x0" scene="@0x7F0D02E8">
+      </SceneParams>
+      <com.maxmpz.widget.list.PowerList id="@0x7F0D02EB" style="?0x7F01041F">
+      </com.maxmpz.widget.list.PowerList>
+      <SceneParams scene="@0x7F0D02E8" recalcChildren="0x0">
+      </SceneParams>
+      <com.maxmpz.widget.base.BusSelectablePopupButtonLayout id="@0x7F0D00C9" toastOnPress="@0x7F080302" msgId="@0x7F0D0095" stateId="@0x7F0D00C9" stateBusId="@0x7F0D0033" buttonsMsgId="@0x7F0D00EA" buttonsBusId="@0x7F0D0034" buttonsArg1="?0x7F0106AF" buttonsLabels="?0x7F0106AD" buttonsDrawables="?0x7F0106AE" getStateOnMsg="true" style="?0x7F010393">
+      </com.maxmpz.widget.base.BusSelectablePopupButtonLayout>
+      <SceneParams scene="@0x7F0D013D" style="?0x7F0103AE">
+      </SceneParams>
+      <SceneParams visibility="0x2" scene="@0x7F0D02E8">
+      </SceneParams>
+    </com.maxmpz.audioplayer.widget.VisPanelFrame>
+    <SceneParams scene="@0x7F0D02E8" recalcChildren="0x0" style="?0x7F010420">
+    </SceneParams>
+  </com.maxmpz.widget.base.SceneFastLayout>
+  <SceneParams visibility="0x0" alpha="1.00" scene="@0x7F0D002F">
+  </SceneParams>
+  <SceneParams visibility="0x0" alpha="0.50" scene="@0x7F0D002E">
+  </SceneParams>
+  <SceneParams visibility="0x1" scene="@0x7F0D002D">
+  </SceneParams>
+  <SceneParams visibility="0x2" scene="@0x7F0D0031" scene_2="@0x7F0D0031" scene_3="@0x7F0D0032" scene_4="@0x7F0D0030" scene_5="@0x7F0D002C">
+  </SceneParams>
+  <SceneParams visibility="0x2" scene="@0x7F0D06D8">
+  </SceneParams>
+  <StateAnimParams alpha="0.00" stateAnim="@0x7F0D03B8">
+  </StateAnimParams>
+</merge>
+
+<!-- ===== res/xml/peq_builtin_skins.xml ===== -->
+<skins>
+  <skin author="@0x7F0803EE" darkMode="@0x7F0E013B" description="@0x7F0808B4" forceGlobalOptions="true" name="@0x7F0808B2" style="@0x7F0E015F">
+    <multiSwitch key="mu_colors" minSdk="0x1F" name="@0x7F080379">
+      <option name="@0x7F080192" overlapStyle="">
+      </option>
+      <option name="@0x7F08034C" overlapStyle="@0x7F0E0008">
+      </option>
+      <option name="@0x7F0802DA" overlapStyle="@0x7F0E0007">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F0E05D1" key="font_variant" name="@0x7F080208">
+      <option name="@0x7F080004" overlapStyle="@0x7F0E0042">
+      </option>
+      <option name="@0x7F0808A8" overlapStyle="@0x7F0E041A">
+      </option>
+      <option name="@0x7F0800C7" overlapStyle="@0x7F0E05D1">
+      </option>
+    </multiSwitch>
+    <multiSwitch key="rounding" name="@0x7F0808BC">
+      <option name="@0x7F0808B8" overlapStyle="">
+      </option>
+      <option name="@0x7F0808B1" overlapAttr="@0x7F0107DF">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F0107FD" key="knob_hilite" name="@0x7F0808B0">
+      <option name="@0x7F0803A3" overlapAttr="">
+      </option>
+      <option name="@0x7F08034A" overlapAttr="@0x7F0107FE">
+      </option>
+      <option name="@0x7F08012E" overlapAttr="@0x7F0107FD">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F010AE8" key="graphic_frs_color" name="@0x7F0808AF">
+      <option name="@0x7F08034A" overlapAttr="">
+      </option>
+      <option name="@0x7F08012E" overlapAttr="@0x7F010AE8">
+      </option>
+    </multiSwitch>
+    <option checkedByDefault="false" key="light_buttons" name="@0x7F0808B3" overlapStyle="@0x7F0E042F" summary="@0x7F0808C4">
+    </option>
+    <option checkedByDefault="false" key="force_light_navbar" name="@0x7F0808AE" overlapStyle="@0x7F0E0192" summary="@0x7F0808C3">
+    </option>
+    <option checkedByDefault="false" key="trans_navbar" name="@0x7F0808C8" overlapAttr="@0x7F0105EC" summary="@0x7F0808C7">
+    </option>
+    <option checkedByDefault="false" key="navbar_offset" name="@0x7F0808BA" overlapAttr="@0x7F0105FE" summary="@0x7F0808C6">
+    </option>
+  </skin>
+  <skin author="@0x7F0803EE" description="@0x7F0808AC" forceGlobalOptions="true" lightMode="@0x7F0E015F" name="@0x7F0808AB" style="@0x7F0E013B">
+    <multiSwitch key="mu_colors" minSdk="0x1F" name="@0x7F080379">
+      <option name="@0x7F080192" overlapStyle="">
+      </option>
+      <option name="@0x7F08034C" overlapStyle="@0x7F0E0002">
+      </option>
+      <option name="@0x7F0802DA" overlapStyle="@0x7F0E0001">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F0E05D1" key="font_variant" name="@0x7F080208">
+      <option name="@0x7F080004" overlapStyle="@0x7F0E0042">
+      </option>
+      <option name="@0x7F0808A8" overlapStyle="@0x7F0E041A">
+      </option>
+      <option name="@0x7F0800C7" overlapStyle="@0x7F0E05D1">
+      </option>
+    </multiSwitch>
+    <multiSwitch key="rounding" name="@0x7F0808BC">
+      <option name="@0x7F0808B8" overlapStyle="">
+      </option>
+      <option name="@0x7F0808B1" overlapAttr="@0x7F0107DF">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F0107FD" key="knob_hilite" name="@0x7F0808B0">
+      <option name="@0x7F0803A3" overlapAttr="">
+      </option>
+      <option name="@0x7F08034A" overlapAttr="@0x7F0107FE">
+      </option>
+      <option name="@0x7F08012E" overlapAttr="@0x7F0107FD">
+      </option>
+    </multiSwitch>
+    <multiSwitch defaultValue="@0x7F010AE8" key="graphic_frs_color" name="@0x7F0808AF">
+      <option name="@0x7F08034A" overlapAttr="">
+      </option>
+      <option name="@0x7F08012E" overlapAttr="@0x7F010AE8">
+      </option>
+    </multiSwitch>
+    <option checkedByDefault="false" key="trans_navbar" name="@0x7F0808C8" overlapStyle="@0x7F0E0416" summary="@0x7F0808C7">
+    </option>
+    <option checkedByDefault="false" key="navbar_offset" name="@0x7F0808BA" overlapAttr="@0x7F0105FE" summary="@0x7F0808C6">
+    </option>
+  </skin>
+</skins>
+
+<!-- ===== res/xml/peq_equ.xml ===== -->
+<PreferenceScreen title="@0x7F0801CC" ignoreTitle="true">
+  <com.maxmpz.audioplayer.preference.MultilineSwitchPreference title="@0x7F0805D3" key="peq_enable" summary="@0x7F080711" defaultValue="true">
+  </com.maxmpz.audioplayer.preference.MultilineSwitchPreference>
+  <PreferenceScreen title="@0x7F080095" key="audio_info">
+    <intent targetPackage="@0x7F0801B7" targetClass="com.maxmpz.audioplayer.dialogs.AudioInfoActivity">
+    </intent>
+  </PreferenceScreen>
+  <com.maxmpz.audioplayer.preference.RedirectPreference title="@0x7F08023E" key="peq_equ_global" summary="@0x7F0806C3" target="peq_equ_global" sup="@0x7F080505" supLink="alert?text=@string/pref_experimental_msg">
+  </com.maxmpz.audioplayer.preference.RedirectPreference>
+  <com.maxmpz.audioplayer.preference.RedirectPreference title="@0x7F080542" key="known_players" summary="@0x7F0806D3" target="peq_known_players">
+  </com.maxmpz.audioplayer.preference.RedirectPreference>
+  <com.maxmpz.audioplayer.preference.RedirectPreference title="@0x7F08048F" summary="@0x7F080687" target="peq_player_tracking">
+  </com.maxmpz.audioplayer.preference.RedirectPreference>
+  <com.maxmpz.audioplayer.preference.RedirectPreference title="@0x7F0804D3" key="audio_dvc" summary="@0x7F0806AD" target="audio_dvc">
+  </com.maxmpz.audioplayer.preference.RedirectPreference>
+  <PreferenceCategory title="@0x7F0801CC">
+    <com.maxmpz.audioplayer.preference.RawTextPreference background="@0x7F020576" key="_pref_equ_mode_desc" line1="@0x7F080500" line2="@0x7F080501" line3="@0x7F08051E" line4="@0x7F0805BF" keepPaddings="true">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <com.maxmpz.audioplayer.preference.RedirectPreference persistent="false" title="@0x7F0804FF" key="peq_equ_bands" summary="@0x7F0806B7" target="peq_equ_bands">
+    </com.maxmpz.audioplayer.preference.RedirectPreference>
+    <com.maxmpz.audioplayer.preference.RedirectPreference persistent="false" title="@0x7F08093C" key="peq_equ_tone" summary="@0x7F0806B8" target="peq_equ_tone">
+    </com.maxmpz.audioplayer.preference.RedirectPreference>
+    <com.maxmpz.audioplayer.preference.TagListPreference title="@0x7F0804FD" key="eq_labels" defaultValue="0x1" entries="@0x7F0F0041">
+    </com.maxmpz.audioplayer.preference.TagListPreference>
+    <com.maxmpz.audioplayer.preference.TagListPreference title="@0x7F08077F" key="tone_labels" defaultValue="0x2" entries="@0x7F0F0041">
+    </com.maxmpz.audioplayer.preference.TagListPreference>
+    <com.maxmpz.audioplayer.preference.TagListPreference title="@0x7F0804FE" key="equ_overlap" defaultValue="0x0" entries="@0x7F0F0042">
+    </com.maxmpz.audioplayer.preference.TagListPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference background="@0x7F020576" line1="@0x7F0804FC" line2="@0x7F0804FB" line3="@0x7F0804AC" keepPaddings="true">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <com.maxmpz.audioplayer.preference.MultilineSwitchPreference title="@0x7F0804E6" key="dsp_border_gain" summary="@0x7F0806AB" defaultValue="true">
+    </com.maxmpz.audioplayer.preference.MultilineSwitchPreference>
+    <com.maxmpz.audioplayer.preference.MultilineSwitchPreference persistent="false" title="@0x7F0800A3" key="_autosave" summary="@0x7F080697">
+    </com.maxmpz.audioplayer.preference.MultilineSwitchPreference>
+    <com.maxmpz.audioplayer.preference.MultilineSwitchPreference persistent="true" title="@0x7F080676" key="suggest_autoeq" summary="@0x7F080756">
+    </com.maxmpz.audioplayer.preference.MultilineSwitchPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference title="@0x7F080625" key="_clear_autoeq_known_devices" dependency="suggest_autoeq" searchSummary="@0x7F08072E" skipSearch="false">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference title="@0x7F080299" key="_import_autoeq" line1="@0x7F08029D" searchSummary="@0x7F08029D" skipSearch="false">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <Preference title="@0x7F080626" key="reset_eq_presets" summary="@0x7F08072F">
+    </Preference>
+  </PreferenceCategory>
+  <PreferenceCategory title="@0x7F08048D">
+    <com.maxmpz.audioplayer.preference.RedirectPreference title="@0x7F080154" summary="@0x7F080710" target="peq_compr">
+    </com.maxmpz.audioplayer.preference.RedirectPreference>
+    <com.maxmpz.audioplayer.preference.SeekbarPreference title="@0x7F0805C6" key="peq_blocksize" summary="@0x7F08070E" values="@0x7F0F0037" leftLabel="2048" rightLabel="16384" tickMark="@0x7F02047B" summary2="@0x7F08083D">
+    </com.maxmpz.audioplayer.preference.SeekbarPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference icon="@0x7F020380" key="_peq_blocksize_msg_android_9" smallLine1="@0x7F0805C9">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <com.maxmpz.audioplayer.preference.SeekbarPreference title="@0x7F0805C7" key="peq_blocksize_hires" summary="@0x7F08070F" values="@0x7F0F0037" leftLabel="2048" rightLabel="16384" tickMark="@0x7F02047B" summary2="@0x7F08083D">
+    </com.maxmpz.audioplayer.preference.SeekbarPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference smallLine1="@0x7F0805C8">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+    <com.maxmpz.audioplayer.preference.TagListPreference persistent="true" title="@0x7F080420" key="peq_new_pipeline_model" summary="@0x7F080911" entries="@0x7F0F0026">
+    </com.maxmpz.audioplayer.preference.TagListPreference>
+    <com.maxmpz.audioplayer.preference.RawTextPreference background="@0x7F020576" line1="@0x7F080421" line2="@0x7F080422" line3="@0x7F080423" keepPaddings="true" line2Prefix="● " line3Prefix="● " zeroTopPad="true">
+    </com.maxmpz.audioplayer.preference.RawTextPreference>
+  </PreferenceCategory>
+  <Preference title="@0x7F08062A" key="restore_defaults" singleLineTitle="false">
+  </Preference>
+</PreferenceScreen>
+
+<!-- ===== res/xml/peq_compr.xml ===== -->
+<PreferenceScreen title="@0x7F080154" skipSearch="true">
+  <com.maxmpz.audioplayer.preference.RawTextPreference smallLine1="@0x7F080307">
+  </com.maxmpz.audioplayer.preference.RawTextPreference>
+  <Preference title="@0x7F08062A" key="restore_defaults" singleLineTitle="false">
+  </Preference>
+</PreferenceScreen>
+

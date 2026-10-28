@@ -1,0 +1,106 @@
+:root {
+  --fondo-espacial-0: #07090e;
+  --fondo-espacial-1: rgba(15, 19, 28, 0.88);
+  --ambar-sol-brillante: #f59e0b;
+  --ambar-sol-calido: #d97706;
+  --esmeralda-ok: #10b981;
+  --fuente-titulos: 'Space Grotesk', sans-serif;
+  --fuente-ui: 'Inter', sans-serif;
+  --fuente-datos: 'JetBrains Mono', monospace;
+  --fuente-marca: 'Poppins', sans-serif;
+  --perilla-analoga-relieve: 5px 5px 12px rgba(0, 0, 0, 0.85), -2px -2px 6px rgba(255, 255, 255, 0.04);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--fondo-espacial-0);
+  color: #f9fafb;
+  font-family: var(--fuente-ui);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.contenedor-espacial-bento {
+  display: grid;
+  grid-template-columns: 270px 1fr 290px;
+  grid-template-rows: 190px 1fr 110px;
+  gap: 14px;
+  padding: 16px;
+  height: 100vh;
+}
+
+.tarjeta-bento-clay {
+  background: var(--fondo-espacial-1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(18px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+}
+
+.titulo-espacial {
+  font-family: var(--fuente-titulos);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.indicador-tecnico-hz {
+  font-family: var(--fuente-datos);
+  font-size: 0.7rem;
+  color: var(--ambar-sol-brillante);
+  background: rgba(245, 158, 11, 0.12);
+  padding: 3px 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.canal-fader-analogo {
+  flex: 1;
+  width: 10px;
+  background: #050608;
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.capuchon-fader-esqueumorfico {
+  width: 30px;
+  height: 18px;
+  left: 50%;
+  margin-left: -15px;
+  border-radius: 5px;
+  background: linear-gradient(180deg, #2e323b 0%, #171a21 50%, #262a33 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.linea-guia-ambar {
+  width: 18px;
+  height: 2px;
+  background: var(--ambar-sol-brillante);
+  box-shadow: 0 0 6px var(--ambar-sol-brillante);
+}
+
+.boton-clay-ambar {
+  font-family: var(--fuente-marca);
+  font-size: 0.78rem;
+  font-weight: 700;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+}

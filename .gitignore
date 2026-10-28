@@ -1,0 +1,37 @@
+# Binarios y carpetas de compilación
+target/
+**/target/
+cmake-build-*/
+*.exe
+*.dll
+*.lib
+*.exp
+*.pdb
+*.obj
+*.o
+*.a
+*.d
+
+# Archivos de estado IPC e intermedios
+*.bin
+estado_dsp_activo.bin
+compilacion_error.txt
+apo_config.txt
+
+# Entornos virtuales y dependencias
+.env
+env/
+venv/
+__pycache__/
+*.pyc
+
+# IDEs y editores
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos pesados o temporales del extractor
+*.apk
+*.avif
+*.webp

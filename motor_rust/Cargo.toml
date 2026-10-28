@@ -1,0 +1,29 @@
+[package]
+name = "motor_ecualizador_poweramp"
+version = "2.0.0"
+edition = "2021"
+authors = ["Jose Aldra Aviles Cardenas"]
+description = "Motor DSP soberano en Rust basado en ingenieria inversa de Poweramp Equalizer"
+
+[[bin]]
+name = "motor_dsp_poweramp"
+path = "src/main.rs"
+
+[lib]
+name = "motor_ecualizador_poweramp"
+path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+iced = { version = "0.14.0", default-features = false, features = ["wgpu", "tiny-skia", "canvas", "crisp", "tokio"] }
+
+[features]
+default = []
+dll_com = []
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+strip = true

@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Poweramp Equalizer DSP - Motor Soberano en Rust (64-bit)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Poppins:wght@600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --fondo-obsidiana: #07090E;
+      --fondo-panel: rgba(15, 19, 28, 0.86);
+      --borde-cristal: rgba(245, 158, 11, 0.18);
+      --ambar-sol: #F59E0B;
+      --ambar-calido: #D97706;
+      --ambar-brillo: #FBBF24;
+      --cherry-neon: #FF2A5F;
+      --esmeralda-ok: #10B981;
+      --texto-primario: #F9FAFB;
+      --texto-secundario: #9CA3AF;
+      --fuente-titulos: 'Space Grotesk', sans-serif;
+      --fuente-ui: 'Inter', sans-serif;
+      --fuente-datos: 'JetBrains Mono', monospace;
+      --fuente-marca: 'Poppins', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 18% 12%, rgba(245, 158, 11, 0.10), transparent 42%),
+                  radial-gradient(circle at 85% 82%, rgba(255, 42, 95, 0.08), transparent 40%),
+                  var(--fondo-obsidiana);
+      color: var(--texto-primario);
+      font-family: var(--fuente-ui);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      padding: 14px;
+      gap: 12px;
+    }
+
+    /* Barra Superior */
+    .barra-superior {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      background: var(--fondo-panel);
+      border: 1px solid var(--borde-cristal);
+      border-radius: 16px;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    }
+
+    .marca-titulo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .punto-vivo {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--esmeralda-ok);
+      box-shadow: 0 0 10px var(--esmeralda-ok);
+    }
+
+    .marca-titulo h1 {
+      font-family: var(--fuente-titulos);
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      color: #fff;
+    }
+
+    .insignia-perfil {
+      font-family: var(--fuente-datos);
+      font-size: 0.76rem;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid var(--ambar-sol);
+      color: var(--ambar-brillo);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .pestanas-poweramp {
+      display: flex;
+      gap: 8px;
+    }
+
+    .boton-pestana {
+      font-family: var(--fuente-marca);
+      font-size: 0.78rem;
+      font-weight: 600;
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      color: #D1D5DB;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .boton-pestana:hover {
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fff;
+    }
+
+    .boton-pestana.activa {
+      background: linear-gradient(135deg, var(--ambar-sol), var(--ambar-calido));
+      color: #000;
+      border-color: var(--ambar-brillo);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Rejilla Principal Bento */
+    .rejilla-bento {
+      display: grid;
+      grid-template-columns: 270px 1fr 300px;
+      grid-template-rows: 175px 1fr 76px;
+      gap: 12px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .tarjeta {
+      background: var(--fondo-panel);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 18px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+      min-height: 0;
+    }
+
+    .cabecera-tarjeta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .titulo-tarjeta {
+      font-family: var(--fuente-titulos);
+      font-size: 0.84rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #F3F4F6;
+    }
+
+    .etiqueta-tecnica {
+      font-family: var(--fuente-datos);
+      font-size: 0.68rem;
+      color: var(--ambar-sol);
+      background: rgba(245, 158, 11, 0.1);
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+
+    /* Perillas Rotativas 3D */
+    .grupo-perillas {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      flexWrap: wrap;
+      gap: 10px;
+    }
+
+    .contenedor-perilla {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nombre-perilla {
+      font-size: 0.74rem;
+      color: #D1D5DB;
+      font-weight: 600;
+    }
+
+    .chasis-perilla {
+      width: 58px;
+      height: 58px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #1F1B15, #0D0B08);
+      box-shadow: 5px 5px 12px rgba(0, 0, 0, 0.85),
+                  -2px -2px 6px rgba(255, 255, 255, 0.04),
+                  inset 0 0 0 2px rgba(245, 158, 11, 0.18);
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: ns-resize;
+    }
+
+    .rotor-perilla {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      position: absolute;
+      display: flex;
+      justify-content: center;
+    }
+
+    .aguja-ambar {
+      width: 4px;
+      height: 13px;
+      background: var(--ambar-sol);
+      border-radius: 2px;
+      margin-top: 5px;
+      box-shadow: 0 0 8px var(--ambar-sol);
+    }
+
+    .centro-perilla {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: #13110E;
+      box-shadow: inset 2px 2px 5px rgba(0,0,0,0.9);
+    }
+
+    .valor-perilla {
+      font-family: var(--fuente-datos);
+      font-size: 0.74rem;
+      color: var(--ambar-brillo);
+      font-weight: 600;
+    }
+
+    /* Banco de Faders Esqueumorficos */
+    .banco-faders {
+      display: flex;
+      flex: 1;
+      gap: 6px;
+      align-items: stretch;
+      overflow-x: auto;
+      padding: 4px 2px;
+      min-height: 0;
+    }
+
+    .columna-fader {
+      flex: 1;
+      min-width: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      background: rgba(0, 0, 0, 0.22);
+      transition: border-color 0.15s;
+    }
+
+    .columna-fader.seleccionada {
+      border-color: rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.06);
+    }
+
+    .lectura-db-fader {
+      font-family: var(--fuente-datos);
+      font-size: 0.68rem;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    .pista-fader {
+      flex: 1;
+      width: 10px;
+      background: #060709;
+      border-radius: 999px;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.95);
+      position: relative;
+      cursor: pointer;
+      margin: 6px 0;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .capuchon-fader {
+      position: absolute;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 30px;
+      height: 18px;
+      border-radius: 5px;
+      background: linear-gradient(180deg, #2E323B 0%, #171A21 50%, #262A33 100%);
+      border: 1px solid rgba(255,255,255,0.18);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+    }
+
+    .capuchon-fader::after {
+      content: '';
+      width: 18px;
+      height: 2px;
+      background: var(--ambar-sol);
+      box-shadow: 0 0 6px var(--ambar-sol);
+    }
+
+    .frecuencia-fader {
+      font-family: var(--fuente-datos);
+      font-size: 0.68rem;
+      color: #D1D5DB;
+      font-weight: 600;
+    }
+
+    .tipo-fader-tag {
+      font-family: var(--fuente-datos);
+      font-size: 0.60rem;
+      color: var(--texto-secundario);
+    }
+
+    /* Inspector Parametrico Inferior */
+    .inspector-banda {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.42);
+      padding: 8px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+
+    .input-tecnico {
+      background: #0B0E14;
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 6px;
+      padding: 4px 7px;
+      font-family: var(--fuente-datos);
+      font-size: 0.74rem;
+    }
+
+    .boton-accion {
+      font-family: var(--fuente-marca);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.16);
+      color: #fff;
+      transition: all 0.15s;
+    }
+
+    .boton-accion:hover {
+      background: var(--ambar-sol);
+      color: #000;
+    }
+
+    .boton-peligro {
+      border-color: rgba(255, 42, 95, 0.45);
+      background: rgba(255, 42, 95, 0.16);
+    }
+
+    .boton-peligro:hover {
+      background: var(--cherry-neon);
+      color: #fff;
+    }
+
+    /* Lista AutoEQ */
+    .lista-autoeq {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+      margin-top: 6px;
+    }
+
+    .item-autoeq {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: #F3F4F6;
+      font-size: 0.75rem;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.14s;
+    }
+
+    .item-autoeq:hover {
+      border-color: var(--ambar-sol);
+      background: rgba(245, 158, 11, 0.12);
+    }
+
+    .oculto {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+  <!-- BARRA SUPERIOR -->
+  <header class="barra-superior">
+    <div class="marca-titulo">
+      <div class="punto-vivo" id="indicadorConexion"></div>
+      <h1>POWERAMP EQUALIZER DSP // MOTOR RUST 64-BIT</h1>
+      <span class="insignia-perfil" id="etiquetaPerfilActual">Cargando perfil...</span>
+      <span class="etiqueta-tecnica" id="insigniaWasapiLoopback">WASAPI LOOPBACK: AUDIFONOS / ALTAVOCES</span>
+    </div>
+
+    <nav class="pestanas-poweramp">
+      <button class="boton-pestana activa" onclick="cambiarVista('ecualizador', this)">Ecualizador &amp; Tono</button>
+      <button class="boton-pestana" onclick="cambiarVista('espacio', this)">Espacio &amp; Tempo</button>
+      <button class="boton-pestana" onclick="cambiarVista('compresor', this)">Compresor Dinamico</button>
+      <button class="boton-pestana" onclick="cambiarVista('reverberacion', this)">Reverberacion</button>
+    </nav>
+  </header>
+
+  <!-- REJILLA BENTO -->
+  <main class="rejilla-bento">
+    <!-- COLUMNA IZQUIERDA (FILAS 1 y 2): TONO & PREAMP -->
+    <section class="tarjeta" style="grid-row: span 2; justify-content: space-between;">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta">Tono &amp; Preamp</span>
+        <span class="etiqueta-tecnica">Coefs.smali</span>
+      </div>
+
+      <div class="grupo-perillas" id="contenedorPerillasTono"></div>
+
+      <div style="background: rgba(0,0,0,0.35); padding: 10px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.06); display: flex; flex-direction: column; gap: 6px; font-size: 0.72rem;">
+        <div style="display:flex; justify-content:space-between;">
+          <span>Frecuencia Graves: <strong id="lblGravesHz" style="font-family:var(--fuente-datos); color:var(--ambar-brillo);">90 Hz</strong></span>
+          <span>Q: <strong id="lblGravesQ" style="font-family:var(--fuente-datos);">0.80</strong></span>
+        </div>
+        <input type="range" id="sliderGravesHz" min="30" max="250" step="5" value="90" style="accent-color: var(--ambar-sol);" oninput="actualizarFrecuenciaTono()" />
+
+        <div style="display:flex; justify-content:space-between; margin-top:4px;">
+          <span>Frecuencia Agudos: <strong id="lblAgudosHz" style="font-family:var(--fuente-datos); color:var(--ambar-brillo);">10000 Hz</strong></span>
+          <span>Q: <strong id="lblAgudosQ" style="font-family:var(--fuente-datos);">0.60</strong></span>
+        </div>
+        <input type="range" id="sliderAgudosHz" min="4000" max="16000" step="250" value="10000" style="accent-color: var(--ambar-sol);" oninput="actualizarFrecuenciaTono()" />
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <button id="btnMotorActivo" class="boton-pestana activa" style="width: 100%; padding: 11px;" onclick="alternarMotorActivo()">
+          MOTOR DSP ACTIVADO
+        </button>
+        <button class="boton-accion" style="width: 100%;" onclick="enviarComando('REINICIAR')">
+          Reiniciar todas las bandas a 0 dB
+        </button>
+      </div>
+    </section>
+
+    <!-- CENTRO FILA 1: VISUALIZADOR FFT 1024 + CURVA DE RESPUESTA IIR -->
+    <section class="tarjeta" style="padding: 10px 14px;">
+      <div class="cabecera-tarjeta" style="margin-bottom: 6px;">
+        <span class="titulo-tarjeta">Analizador FFT 1024 Puntos + Curva IIR en Tiempo Real</span>
+        <span class="etiqueta-tecnica" id="etiquetaTelemetriaCima">48000 Hz | 64 Barras</span>
+      </div>
+      <div style="flex: 1; position: relative; border-radius: 12px; overflow: hidden; background: #05070B; border: 1px solid rgba(245, 158, 11, 0.16);">
+        <canvas id="lienzoEspectro" width="760" height="120" style="width: 100%; height: 100%; display: block;"></canvas>
+      </div>
+    </section>
+
+    <!-- COLUMNA DERECHA (FILAS 1 y 2): BUSCADOR AUTOEQ (auto_eq.db) Y PRESETS -->
+    <section class="tarjeta" style="grid-row: span 2;">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta">Base AutoEQ &amp; Presets</span>
+        <span class="etiqueta-tecnica">auto_eq.db APK</span>
+      </div>
+
+      <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+        <button class="boton-accion" style="flex: 1;" onclick="cargarJblJson()">JBL 720BT (.json)</button>
+        <button class="boton-accion boton-peligro" style="flex: 1;" onclick="cargarPeqSettings()">.peq-settings</button>
+      </div>
+
+      <input
+        type="text"
+        id="inputBuscarAutoEq"
+        class="input-tecnico"
+        placeholder="Buscar audifono en auto_eq.db (ej. JBL, Sony, Sennheiser)..."
+        value="JBL Tune"
+        oninput="buscarAutoEq(this.value)"
+        style="width: 100%; padding: 8px 10px; margin-bottom: 4px;"
+      />
+
+      <div class="lista-autoeq" id="contenedorResultadosAutoEq"></div>
+    </section>
+
+    <!-- CENTRO FILA 2: CONTENIDO DE LAS 4 PANTALLAS DE POWERAMP -->
+    <section class="tarjeta" id="vista-ecualizador">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta" id="tituloBancoBandas">Banco Parametrico Biquad</span>
+        <span class="etiqueta-tecnica">Direct Form II Transposed</span>
+      </div>
+
+      <div class="banco-faders" id="contenedorBancoFaders"></div>
+
+      <div class="inspector-banda">
+        <span id="lblBandaInspector" style="font-family: var(--fuente-datos); color: var(--ambar-brillo); font-weight: 700; font-size: 0.76rem;">BANDA #1</span>
+        <label style="font-size: 0.74rem;">Hz:
+          <input type="number" id="inpBandaHz" class="input-tecnico" style="width: 72px;" min="16" max="22000" step="1" onchange="aplicarInspectorBanda()" />
+        </label>
+        <label style="font-size: 0.74rem;">Q:
+          <input type="number" id="inpBandaQ" class="input-tecnico" style="width: 62px;" min="0.1" max="25" step="0.05" onchange="aplicarInspectorBanda()" />
+        </label>
+        <select id="selBandaTipo" class="input-tecnico" onchange="aplicarInspectorBanda()">
+          <option value="PicoParametrico">Pico Parametrico (PK)</option>
+          <option value="EstanteGraves">Estante Graves (LS)</option>
+          <option value="EstanteAgudos">Estante Agudos (HS)</option>
+          <option value="PasoBajo">Paso Bajo (LP)</option>
+          <option value="PasoAlto">Paso Alto (HP)</option>
+          <option value="PasoBanda">Paso Banda (BP)</option>
+        </select>
+        <div style="display: flex; gap: 6px;">
+          <button class="boton-accion" onclick="enviarComando('AGREGAR_BANDA 2500.0 1.41 0.0 PicoParametrico')">+ Banda</button>
+          <button class="boton-accion boton-peligro" onclick="eliminarBandaActual()">Eliminar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta oculto" id="vista-espacio">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta">Espacio, Expansion Estereo Mid/Side &amp; Tempo</span>
+        <span class="etiqueta-tecnica">Potencia Constante</span>
+      </div>
+      <div class="grupo-perillas" style="flex: 1;" id="contenedorPerillasEspacio"></div>
+    </section>
+
+    <section class="tarjeta oculto" id="vista-compresor">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta">Compresor Dinamico con Filtro Sidechain (peq_compr.xml)</span>
+        <span class="etiqueta-tecnica" id="etiquetaReduccionCompresor">Reduccion: 0.0 dB</span>
+      </div>
+      <div class="grupo-perillas" style="flex: 1;" id="contenedorPerillasCompresor"></div>
+    </section>
+
+    <section class="tarjeta oculto" id="vista-reverberacion">
+      <div class="cabecera-tarjeta">
+        <span class="titulo-tarjeta">Reverberacion Estereo Schroeder-Moorer / Freeverb</span>
+        <span class="etiqueta-tecnica">8 Peines + 4 Paso-Todo</span>
+      </div>
+      <div class="grupo-perillas" style="flex: 1;" id="contenedorPerillasReverb"></div>
+    </section>
+
+    <!-- FILA INFERIOR: TELEMETRIA Y ESTADO -->
+    <section class="tarjeta" style="grid-column: span 3; flex-direction: row; justify-content: space-between; align-items: center; padding: 10px 18px;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <span style="font-family: var(--fuente-titulos); font-weight: 700; color: var(--ambar-brillo); font-size: 0.86rem;">
+          PROTECTOR ANTI-RECORTE (-0.1 dBFS) &amp; SINCRONIZACION APO ACTIVA
+        </span>
+        <span id="txtMensajeEstado" style="font-size: 0.78rem; color: #D1D5DB;">
+          Exportando filtros en tiempo real hacia apo_config.txt
+        </span>
+      </div>
+
+      <div style="display: flex; gap: 22px; font-family: var(--fuente-datos); font-size: 0.78rem;">
+        <span>Reduccion Compresor: <strong id="lblGrInferior" style="color: var(--ambar-sol);">-0.00 dB</strong></span>
+        <span>Pico Salida: <strong id="lblPicoInferior" style="color: var(--esmeralda-ok);">-12.0 dBFS</strong></span>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    let estadoGlobal = null;
+    let bandaSeleccionada = 1;
+    let barrasEspectro = new Array(64).fill(0);
+    let alturasSuavizadas = new Array(64).fill(0);
+
+    function crearPerillaInteractiva(contenedor, etiqueta, valor, min, max, unidad, alCambiar) {
+      const div = document.createElement('div');
+      div.className = 'contenedor-perilla';
+
+      const proporcion = Math.max(0, Math.min(1, (valor - min) / (max - min)));
+      const grados = -135 + proporcion * 270;
+
+      div.innerHTML = `
+        <span class="nombre-perilla">${etiqueta}</span>
+        <div class="chasis-perilla">
+          <div class="rotor-perilla" style="transform: rotate(${grados}deg);">
+            <div class="aguja-ambar"></div>
+          </div>
+          <div class="centro-perilla"></div>
+        </div>
+        <span class="valor-perilla">${Number(valor).toFixed(1)} ${unidad}</span>
+      `;
+
+      const chasis = div.querySelector('.chasis-perilla');
+      const rotor = div.querySelector('.rotor-perilla');
+      const lblValor = div.querySelector('.valor-perilla');
+
+      chasis.addEventListener('mousedown', (evInicial) => {
+        const yInicial = evInicial.clientY;
+        const valInicial = Number(valor);
+        let ultimoValor = valInicial;
+
+        const alMover = (ev) => {
+          const deltaY = yInicial - ev.clientY;
+          const nuevo = Math.max(min, Math.min(max, valInicial + (deltaY / 130) * (max - min)));
+          ultimoValor = Math.round(nuevo * 100) / 100;
+          const prop = (ultimoValor - min) / (max - min);
+          rotor.style.transform = `rotate(${-135 + prop * 270}deg)`;
+          lblValor.textContent = `${ultimoValor.toFixed(1)} ${unidad}`;
+        };
+
+        const alSoltar = () => {
+          window.removeEventListener('mousemove', alMover);
+          window.removeEventListener('mouseup', alSoltar);
+          alCambiar(ultimoValor);
+        };
+
+        window.addEventListener('mousemove', alMover);
+        window.addEventListener('mouseup', alSoltar);
+      });
+
+      contenedor.appendChild(div);
+    }
+
+    function renderizarControlesDesdeEstado(datos) {
+      estadoGlobal = datos;
+      document.getElementById('etiquetaPerfilActual').textContent = datos.nombre_perfil;
+      document.getElementById('tituloBancoBandas').textContent = `Banco Parametrico (${datos.bandas.length} Bandas Activas)`;
+
+      const btnActivo = document.getElementById('btnMotorActivo');
+      btnActivo.textContent = datos.ecualizador_activo ? 'MOTOR DSP ACTIVADO' : 'MODO BYPASS (SONIDO ORIGINAL)';
+      btnActivo.className = datos.ecualizador_activo ? 'boton-pestana activa' : 'boton-pestana';
+
+      // 1. Perillas de Tono y Preamp
+      const contTono = document.getElementById('contenedorPerillasTono');
+      contTono.innerHTML = '';
+      crearPerillaInteractiva(contTono, 'Preamp', datos.ganancia_preamp_db, -15, 15, 'dB', (v) => enviarComando(`PREAMP ${v}`));
+      crearPerillaInteractiva(contTono, 'Graves', datos.tono.graves_ganancia_db, -12, 12, 'dB', (v) => {
+        const t = datos.tono;
+        enviarComando(`TONO ${v} ${t.agudos_ganancia_db} ${t.graves_frecuencia_hz} ${t.graves_factor_q} ${t.agudos_frecuencia_hz} ${t.agudos_factor_q} 1`);
+      });
+      crearPerillaInteractiva(contTono, 'Agudos', datos.tono.agudos_ganancia_db, -12, 12, 'dB', (v) => {
+        const t = datos.tono;
+        enviarComando(`TONO ${t.graves_ganancia_db} ${v} ${t.graves_frecuencia_hz} ${t.graves_factor_q} ${t.agudos_frecuencia_hz} ${t.agudos_factor_q} 1`);
+      });
+
+      document.getElementById('lblGravesHz').textContent = `${Math.round(datos.tono.graves_frecuencia_hz)} Hz`;
+      document.getElementById('lblAgudosHz').textContent = `${Math.round(datos.tono.agudos_frecuencia_hz)} Hz`;
+      document.getElementById('sliderGravesHz').value = datos.tono.graves_frecuencia_hz;
+      document.getElementById('sliderAgudosHz').value = datos.tono.agudos_frecuencia_hz;
+
+      // 2. Banco de Faders
+      const contFaders = document.getElementById('contenedorBancoFaders');
+      contFaders.innerHTML = '';
+      datos.bandas.forEach((banda) => {
+        const col = document.createElement('div');
+        col.className = 'columna-fader' + (banda.identificador === bandaSeleccionada ? ' seleccionada' : '');
+
+        const porcentajeTop = Math.max(6, Math.min(94, ((24 - banda.ganancia_db) / 48) * 100));
+        const frecTxt = banda.frecuencia_hz >= 1000
+          ? `${(banda.frecuencia_hz / 1000).toFixed(1)}k`
+          : `${Math.round(banda.frecuencia_hz)}`;
+
+        col.innerHTML = `
+          <span class="lectura-db-fader" style="color: ${banda.ganancia_db > 0 ? 'var(--ambar-brillo)' : banda.ganancia_db < 0 ? 'var(--cherry-neon)' : '#fff'}">
+            ${banda.ganancia_db > 0 ? '+' : ''}${banda.ganancia_db.toFixed(1)}
+          </span>
+          <div class="pista-fader">
+            <div class="capuchon-fader" style="top: ${porcentajeTop}%;"></div>
+          </div>
+          <span class="frecuencia-fader">${frecTxt} Hz</span>
+          <span class="tipo-fader-tag">Q ${banda.factor_q.toFixed(2)}</span>
+        `;
+
+        col.addEventListener('click', () => {
+          bandaSeleccionada = banda.identificador;
+          sincronizarInspectorBanda();
+          renderizarControlesDesdeEstado(estadoGlobal);
+        });
+
+        const pista = col.querySelector('.pista-fader');
+        const capuchon = col.querySelector('.capuchon-fader');
+        const lectura = col.querySelector('.lectura-db-fader');
+
+        pista.addEventListener('mousedown', (evIni) => {
+          evIni.stopPropagation();
+          bandaSeleccionada = banda.identificador;
+          let ultimaGanancia = banda.ganancia_db;
+
+          const actualizarPorRaton = (ev) => {
+            const rect = pista.getBoundingClientRect();
+            const relY = Math.max(0, Math.min(rect.height, ev.clientY - rect.top));
+            const prop = 1.0 - relY / rect.height;
+            ultimaGanancia = Math.round((prop * 48 - 24) * 10) / 10;
+            const topPct = Math.max(6, Math.min(94, ((24 - ultimaGanancia) / 48) * 100));
+            capuchon.style.top = `${topPct}%`;
+            lectura.textContent = `${ultimaGanancia > 0 ? '+' : ''}${ultimaGanancia.toFixed(1)}`;
+          };
+
+          actualizarPorRaton(evIni);
+
+          const alSoltar = () => {
+            window.removeEventListener('mousemove', actualizarPorRaton);
+            window.removeEventListener('mouseup', alSoltar);
+            enviarComando(`BANDA ${banda.identificador} ${ultimaGanancia}`);
+          };
+
+          window.addEventListener('mousemove', actualizarPorRaton);
+          window.addEventListener('mouseup', alSoltar);
+        });
+
+        contFaders.appendChild(col);
+      });
+
+      sincronizarInspectorBanda();
+
+      // 3. Perillas Espacio
+      const contEsp = document.getElementById('contenedorPerillasEspacio');
+      contEsp.innerHTML = '';
+      const esp = datos.espacio;
+      crearPerillaInteractiva(contEsp, 'Balance L/R', esp.balance, -1, 1, 'pan', (v) =>
+        enviarComando(`ESPACIO ${v} ${esp.expansion_estereo} ${esp.modo_mono ? 1 : 0} ${esp.tempo}`)
+      );
+      crearPerillaInteractiva(contEsp, 'Expansion Mid/Side', esp.expansion_estereo * 100, 0, 150, '%', (v) =>
+        enviarComando(`ESPACIO ${esp.balance} ${v / 100} ${esp.modo_mono ? 1 : 0} ${esp.tempo}`)
+      );
+      crearPerillaInteractiva(contEsp, 'Tempo / Velocidad', esp.tempo, 0.5, 2.0, 'x', (v) =>
+        enviarComando(`ESPACIO ${esp.balance} ${esp.expansion_estereo} ${esp.modo_mono ? 1 : 0} ${v}`)
+      );
+
+      // 4. Perillas Compresor
+      const contComp = document.getElementById('contenedorPerillasCompresor');
+      contComp.innerHTML = '';
+      const c = datos.compresor;
+      crearPerillaInteractiva(contComp, 'Limite (Umbral)', c.limite_db, -48, 0, 'dB', (v) =>
+        enviarComando(`COMPRESOR 1 ${v} ${c.proporcion} ${c.ataque_ms} ${c.lanzamiento_ms} ${c.frecuencia_sidechain_hz} ${c.ganancia_maquillaje_db}`)
+      );
+      crearPerillaInteractiva(contComp, 'Proporcion', c.proporcion, 1, 20, ':1', (v) =>
+        enviarComando(`COMPRESOR 1 ${c.limite_db} ${v} ${c.ataque_ms} ${c.lanzamiento_ms} ${c.frecuencia_sidechain_hz} ${c.ganancia_maquillaje_db}`)
+      );
+      crearPerillaInteractiva(contComp, 'Ataque', c.ataque_ms, 0.5, 150, 'ms', (v) =>
+        enviarComando(`COMPRESOR 1 ${c.limite_db} ${c.proporcion} ${v} ${c.lanzamiento_ms} ${c.frecuencia_sidechain_hz} ${c.ganancia_maquillaje_db}`)
+      );
+      crearPerillaInteractiva(contComp, 'Lanzamiento', c.lanzamiento_ms, 10, 1000, 'ms', (v) =>
+        enviarComando(`COMPRESOR 1 ${c.limite_db} ${c.proporcion} ${c.ataque_ms} ${v} ${c.frecuencia_sidechain_hz} ${c.ganancia_maquillaje_db}`)
+      );
+      crearPerillaInteractiva(contComp, 'Frec. Sidechain', c.frecuencia_sidechain_hz, 20, 1000, 'Hz', (v) =>
+        enviarComando(`COMPRESOR 1 ${c.limite_db} ${c.proporcion} ${c.ataque_ms} ${c.lanzamiento_ms} ${v} ${c.ganancia_maquillaje_db}`)
+      );
+      crearPerillaInteractiva(contComp, 'Maquillaje', c.ganancia_maquillaje_db, -12, 18, 'dB', (v) =>
+        enviarComando(`COMPRESOR 1 ${c.limite_db} ${c.proporcion} ${c.ataque_ms} ${c.lanzamiento_ms} ${c.frecuencia_sidechain_hz} ${v}`)
+      );
+
+      // 5. Perillas Reverberacion
+      const contRev = document.getElementById('contenedorPerillasReverb');
+      contRev.innerHTML = '';
+      const r = datos.reverberacion;
+      crearPerillaInteractiva(contRev, 'Tamano Sala', r.tamano * 100, 0, 100, '%', (v) =>
+        enviarComando(`REVERB 1 ${v / 100} ${r.preretardo_ms} ${r.amortiguacion} ${r.filtro_tonal} ${Math.max(0.15, r.mezclado)}`)
+      );
+      crearPerillaInteractiva(contRev, 'Preretardo', r.preretardo_ms, 0, 150, 'ms', (v) =>
+        enviarComando(`REVERB 1 ${r.tamano} ${v} ${r.amortiguacion} ${r.filtro_tonal} ${Math.max(0.15, r.mezclado)}`)
+      );
+      crearPerillaInteractiva(contRev, 'Amortiguacion', r.amortiguacion * 100, 0, 100, '%', (v) =>
+        enviarComando(`REVERB 1 ${r.tamano} ${r.preretardo_ms} ${v / 100} ${r.filtro_tonal} ${Math.max(0.15, r.mezclado)}`)
+      );
+      crearPerillaInteractiva(contRev, 'Filtro Tonal', r.filtro_tonal * 100, 0, 100, '%', (v) =>
+        enviarComando(`REVERB 1 ${r.tamano} ${r.preretardo_ms} ${r.amortiguacion} ${v / 100} ${Math.max(0.15, r.mezclado)}`)
+      );
+      crearPerillaInteractiva(contRev, 'Mezclado Wet', r.mezclado * 100, 0, 100, '%', (v) =>
+        enviarComando(`REVERB ${v > 1 ? 1 : 0} ${r.tamano} ${r.preretardo_ms} ${r.amortiguacion} ${r.filtro_tonal} ${v / 100}`)
+      );
+    }
+
+    function sincronizarInspectorBanda() {
+      if (!estadoGlobal || !estadoGlobal.bandas.length) return;
+      const b = estadoGlobal.bandas.find((x) => x.identificador === bandaSeleccionada) || estadoGlobal.bandas[0];
+      bandaSeleccionada = b.identificador;
+      document.getElementById('lblBandaInspector').textContent = `BANDA #${b.identificador}`;
+      document.getElementById('inpBandaHz').value = Math.round(b.frecuencia_hz);
+      document.getElementById('inpBandaQ').value = b.factor_q;
+      document.getElementById('selBandaTipo').value = b.tipo;
+    }
+
+    function aplicarInspectorBanda() {
+      if (!estadoGlobal) return;
+      const b = estadoGlobal.bandas.find((x) => x.identificador === bandaSeleccionada);
+      if (!b) return;
+      const hz = parseFloat(document.getElementById('inpBandaHz').value) || b.frecuencia_hz;
+      const q = parseFloat(document.getElementById('inpBandaQ').value) || b.factor_q;
+      const tipo = document.getElementById('selBandaTipo').value;
+      enviarComando(`PARAM_BANDA ${b.identificador} ${hz} ${q} ${b.ganancia_db} ${tipo} 1`);
+    }
+
+    function eliminarBandaActual() {
+      enviarComando(`ELIMINAR_BANDA ${bandaSeleccionada}`);
+    }
+
+    function actualizarFrecuenciaTono() {
+      if (!estadoGlobal) return;
+      const t = estadoGlobal.tono;
+      const gHz = parseFloat(document.getElementById('sliderGravesHz').value) || 90;
+      const aHz = parseFloat(document.getElementById('sliderAgudosHz').value) || 10000;
+      document.getElementById('lblGravesHz').textContent = `${Math.round(gHz)} Hz`;
+      document.getElementById('lblAgudosHz').textContent = `${Math.round(aHz)} Hz`;
+      enviarComando(`TONO ${t.graves_ganancia_db} ${t.agudos_ganancia_db} ${gHz} ${t.graves_factor_q} ${aHz} ${t.agudos_factor_q} 1`);
+    }
+
+    function alternarMotorActivo() {
+      if (!estadoGlobal) return;
+      const nuevo = estadoGlobal.ecualizador_activo ? 0 : 1;
+      enviarComando(`ACTIVO ${nuevo}`);
+    }
+
+    function cambiarVista(idVista, boton) {
+      ['ecualizador', 'espacio', 'compresor', 'reverberacion'].forEach((v) => {
+        document.getElementById(`vista-${v}`).classList.toggle('oculto', v !== idVista);
+      });
+      document.querySelectorAll('.barra-superior .boton-pestana').forEach((b) => b.classList.remove('activa'));
+      boton.classList.add('activa');
+    }
+
+    async function enviarComando(cmd) {
+      try {
+        const r = await fetch('/comando', { method: 'POST', body: cmd });
+        if (r.ok) {
+          const datos = await r.json();
+          renderizarControlesDesdeEstado(datos);
+          document.getElementById('txtMensajeEstado').textContent = `Comando aplicado en motor Rust: ${cmd}`;
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function cargarJblJson() {
+      enviarComando('PRESET_JSON JBL Tune 720BT (passive) [28 jul 2026 8_55_44\u202fp.m.].json');
+    }
+
+    function cargarPeqSettings() {
+      enviarComando('PEQ_SETTINGS 11-jul-2026-9-09-38-p-m-.peq-settings');
+    }
+
+    async function buscarAutoEq(consulta) {
+      try {
+        const r = await fetch(`/autoeq?q=${encodeURIComponent(consulta)}`);
+        if (!r.ok) return;
+        const datos = await r.json();
+        const cont = document.getElementById('contenedorResultadosAutoEq');
+        cont.innerHTML = '';
+        (datos.resultados || []).forEach((item) => {
+          const btn = document.createElement('button');
+          btn.className = 'item-autoeq';
+          btn.innerHTML = `
+            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:190px;">${item.nombre_modelo}</span>
+            <span style="font-family:var(--fuente-datos); font-size:0.66rem; color:var(--ambar-sol);">${item.numero_bandas}B ${item.es_parametrico ? 'PEQ' : 'GEQ'}</span>
+          `;
+          btn.onclick = () => enviarComando(`AUTOEQ @${item.desplazamiento_blob}`);
+          cont.appendChild(btn);
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // Animacion a 60 FPS del Espectro FFT + Curva IIR Coefs.smali
+    function iniciarLienzoEspectro() {
+      const canvas = document.getElementById('lienzoEspectro');
+      const ctx = canvas.getContext('2d');
+      const mezcla1 = Math.pow(0.72 * 0.97, 0.5);
+      const mezcla2 = 1.0 - mezcla1;
+
+      function dibujar() {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Lineas guia (+12 dB, 0 dB, -12 dB)
+        ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+        ctx.lineWidth = 1;
+        [0.2, 0.5, 0.8].forEach((p) => {
+          ctx.beginPath();
+          ctx.moveTo(0, h * p);
+          ctx.lineTo(w, h * p);
+          ctx.stroke();
+        });
+
+        // 64 barras FFT
+        const num = 64;
+        const anchoBarra = w / num - 2;
+        for (let i = 0; i < num; i++) {
+          const objetivo = Math.max(4, (barrasEspectro[i] || 0) * (h - 10));
+          alturasSuavizadas[i] = objetivo * mezcla2 + alturasSuavizadas[i] * mezcla1;
+
+          const grad = ctx.createLinearGradient(0, h, 0, 0);
+          grad.addColorStop(0, 'rgba(217, 119, 6, 0.30)');
+          grad.addColorStop(0.65, 'rgba(245, 158, 11, 0.68)');
+          grad.addColorStop(1, 'rgba(251, 191, 36, 0.95)');
+          ctx.fillStyle = grad;
+
+          const x = i * (anchoBarra + 2) + 1;
+          const alto = Math.min(h - 2, alturasSuavizadas[i]);
+          ctx.fillRect(x, h - alto, anchoBarra, alto);
+        }
+
+        // Curva de respuesta en frecuencia IIR (Coefs.smali)
+        if (estadoGlobal && Array.isArray(estadoGlobal.curva_respuesta)) {
+          ctx.save();
+          ctx.beginPath();
+          const pts = estadoGlobal.curva_respuesta;
+          pts.forEach((pt, idx) => {
+            const x = (idx / (pts.length - 1)) * w;
+            const db = Math.max(-24, Math.min(24, pt.ganancia_db));
+            const y = h * 0.5 - (db / 24) * (h * 0.42);
+            if (idx === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          });
+          ctx.strokeStyle = '#FF2A5F';
+          ctx.lineWidth = 2.5;
+          ctx.shadowColor = 'rgba(255, 42, 95, 0.65)';
+          ctx.shadowBlur = 10;
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        requestAnimationFrame(dibujar);
+      }
+
+      requestAnimationFrame(dibujar);
+    }
+
+    // Inicializacion
+    (async function iniciar() {
+      iniciarLienzoEspectro();
+      const r = await fetch('/estado');
+      if (r.ok) {
+        const datos = await r.json();
+        renderizarControlesDesdeEstado(datos);
+      }
+      buscarAutoEq('JBL Tune');
+
+      setInterval(async () => {
+        try {
+          const resp = await fetch('/espectro');
+          if (resp.ok) {
+            const d = await resp.json();
+            if (Array.isArray(d.espectro_barras)) barrasEspectro = d.espectro_barras;
+            document.getElementById('lblGrInferior').textContent = `-${d.reduccion_compresor_db.toFixed(2)} dB`;
+            document.getElementById('etiquetaReduccionCompresor').textContent = `Reduccion: -${d.reduccion_compresor_db.toFixed(1)} dB`;
+            document.getElementById('lblPicoInferior').textContent = `${d.pico_salida_db.toFixed(1)} dBFS`;
+          }
+        } catch {}
+      }, 75);
+    })();
+  </script>
+</body>
+</html>
