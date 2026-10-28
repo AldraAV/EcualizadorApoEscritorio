@@ -111,6 +111,7 @@ const AUDCLNT_BUFFERFLAGS_SILENT: u32 = 0x2;
 #[link(name = "ole32")]
 extern "system" {
     fn CoInitializeEx(pv_reserved: *mut c_void, dw_co_init: u32) -> i32;
+    fn CoUninitialize();
     fn CoCreateInstance(
         rclsid: *const Guid,
         p_unk_outer: *mut c_void,
@@ -293,23 +294,34 @@ unsafe fn extraer_info_dispositivo(dispositivo: *mut c_void, id_predeterminado: 
 
 /// Enumera todos los dispositivos de salida de audio (`eRender`) activos en Windows (audifonos, altavoces, HDMI, DACs).
 pub fn enumerar_dispositivos_salida_windows() -> Result<Vec<DispositivoAudioWindows>, String> {
-    unsafe {
-        let _ = CoInitializeEx(ptr::null_mut(), COINIT_MULTITHREADED);
-
-        let mut enumerador: *mut c_void = ptr::null_mut();
-        let hr_enum = CoCreateInstance(
-            &CLSID_MMDEVICE_ENUMERATOR,
-            ptr::null_mut(),
-            CLSCTX_ALL,
-            &IID_IMMDEVICE_ENUMERATOR,
-            &mut enumerador,
-        );
-        if hr_enum < 0 || enumerador.is_null() {
-            return Err(format!(
-                "No se pudo inicializar IMMDeviceEnumerator (0x{:08X})",
-                hr_enum
-            ));
+    // Se ejecuta en un hilo aislado para no alterar el modo del apartamento COM del hilo principal (UI winit STA)
+    std::thread::spawn(|| {
+        unsafe {
+            let _ = CoInitializeEx(ptr::null_mut(), COINIT_MULTITHREADED);
+            let resultado = enumerar_dispositivos_salida_windows_interno();
+            CoUninitialize();
+            resultado
         }
+    })
+    .join()
+    .unwrap_or_else(|_| Err(String::from("Fallo al unir hilo de enumeracion de dispositivos")))
+}
+
+unsafe fn enumerar_dispositivos_salida_windows_interno() -> Result<Vec<DispositivoAudioWindows>, String> {
+    let mut enumerador: *mut c_void = ptr::null_mut();
+    let hr_enum = CoCreateInstance(
+        &CLSID_MMDEVICE_ENUMERATOR,
+        ptr::null_mut(),
+        CLSCTX_ALL,
+        &IID_IMMDEVICE_ENUMERATOR,
+        &mut enumerador,
+    );
+    if hr_enum < 0 || enumerador.is_null() {
+        return Err(format!(
+            "No se pudo inicializar IMMDeviceEnumerator (0x{:08X})",
+            hr_enum
+        ));
+    }
 
         let vtbl_enum = *(enumerador as *const *const IMMDeviceEnumeratorVtbl);
 
@@ -362,7 +374,6 @@ pub fn enumerar_dispositivos_salida_windows() -> Result<Vec<DispositivoAudioWind
 
         ((*vtbl_col).release)(coleccion);
         Ok(lista)
-    }
 }
 
 /// Obtiene un puntero `IMMDevice` por su identificador o el predeterminado de salida (`eRender`).
