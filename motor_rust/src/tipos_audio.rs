@@ -2,6 +2,7 @@
 //! Cumple al 100% con la Soberania Linguistica del Español y Cero Emojis.
 
 use std::fmt;
+use serde::{Deserialize, Serialize};
 
 /// Errores semanticos del motor de audio y decodificacion de presets.
 #[derive(Debug, Clone, PartialEq)]
@@ -56,7 +57,7 @@ impl fmt::Display for ErrorMotorAudio {
 impl std::error::Error for ErrorMotorAudio {}
 
 /// Tipos de filtro soportados por Poweramp Equalizer (JSON y blobs binarios PaP\x01).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TipoFiltro {
     /// Filtro Paso Bajo (Low Pass 12 dB/oct) - Poweramp JSON type = 0 (cuando es filtro de corte)
     PasoBajo,
@@ -139,7 +140,7 @@ impl TipoFiltro {
 }
 
 /// Canales a los que se aplica una banda en Poweramp Equalizer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum CanalAplicacion {
     EstereoAmbos = 0,
     SoloIzquierdo = 1,
@@ -147,7 +148,7 @@ pub enum CanalAplicacion {
 }
 
 /// Definicion de una banda individual del ecualizador parametrico o grafico.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct BandaParametrica {
     pub identificador: usize,
     pub frecuencia_hz: f64,
@@ -181,7 +182,7 @@ impl BandaParametrica {
 }
 
 /// Controles maestros de Tono estilo Poweramp (peq_equ_tone.xml).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct ParametrosTono {
     pub tono_activo: bool,
     pub graves_ganancia_db: f64,
@@ -207,7 +208,7 @@ impl Default for ParametrosTono {
 }
 
 /// Controles de Espacio estilo Poweramp (Balance, Stereo Expand, Mono).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct ParametrosEspacio {
     /// Balance L/R de -1.0 (100% Izquierda) a +1.0 (100% Derecha). 0.0 es centro.
     pub balance: f64,
@@ -228,7 +229,7 @@ impl Default for ParametrosEspacio {
 }
 
 /// Controles del Compresor Dinamico estilo Poweramp (peq_compr.xml).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct ParametrosCompresor {
     pub activo: bool,
     /// Umbral / Limite en dB (-60.0 a 0.0 dB).
@@ -260,7 +261,7 @@ impl Default for ParametrosCompresor {
 }
 
 /// Controles del Procesador de Reverberacion estilo Poweramp (Tamano, Preretardo, Amortiguacion, Filtro, Mezclado).
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 pub struct ParametrosReverberacion {
     pub activo: bool,
     /// Tamano de la sala (0.0 a 1.0).
@@ -289,7 +290,7 @@ impl Default for ParametrosReverberacion {
 }
 
 /// Estado integral de toda la cadena DSP del ecualizador.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EstadoCompletoDsp {
     pub nombre_perfil: String,
     pub ecualizador_activo: bool,

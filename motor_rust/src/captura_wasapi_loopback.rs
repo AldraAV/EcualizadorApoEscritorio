@@ -45,7 +45,7 @@ pub struct WaveFormatEx {
 }
 
 /// Informacion descriptiva de un dispositivo de salida de audio real de Windows (audifonos o altavoces).
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct DispositivoAudioWindows {
     pub identificador: String,
     pub nombre_amigable: String,

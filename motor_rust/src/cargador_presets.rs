@@ -13,7 +13,7 @@ use crate::tipos_audio::{
 };
 
 /// Resumen ligero de un perfil AutoEQ indexado desde `auto_eq.db`.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ResumenPresetAutoEq {
     pub indice: usize,
     pub nombre_modelo: String,
