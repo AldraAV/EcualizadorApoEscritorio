@@ -14,6 +14,7 @@ pub mod cadena_maestra_dsp;
 pub mod captura_wasapi_loopback;
 pub mod cargador_presets;
 pub mod compresor_dinamico;
+pub mod enrutador_pipewire;
 pub mod extractor_ui_apk;
 pub mod filtro_biquad;
 pub mod instalador_apo;

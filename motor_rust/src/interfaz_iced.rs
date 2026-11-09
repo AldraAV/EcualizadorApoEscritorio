@@ -20,7 +20,7 @@ use iced::mouse;
 use iced::time;
 use iced::widget::canvas::{self, Canvas, Frame, Geometry, Path, Stroke};
 use iced::widget::{button, column, container, row, scrollable, slider, space, text, text_input, toggler};
-use iced::{Color, Element, Length, Point, Rectangle, Renderer, Size, Subscription, Task, Theme};
+use iced::{Background, Border, Color, Element, Length, Point, Rectangle, Renderer, Size, Subscription, Task, Theme};
 
 use crate::apo_com_windows::{guardar_estado_binario_ipc, ruta_estado_ipc_global};
 use crate::cadena_maestra_dsp::CadenaMaestraDsp;
@@ -30,6 +30,9 @@ use crate::captura_wasapi_loopback::{
 use crate::cargador_presets::{
     buscar_presets_autoeq_en_archivo, cargar_preset_autoeq_por_consulta, exportar_archivo_apo,
     ResumenPresetAutoEq,
+};
+use crate::enrutador_pipewire::{
+    verificar_pipewire_disponible, EstadoEnrutadorPipeWire,
 };
 use crate::instalador_apo::{
     consultar_estado_instalacion_apo, desinstalar_apo, instalar_y_activar_apo,
@@ -50,13 +53,14 @@ const COLOR_TEXTO_CLARO: Color = Color::from_rgb(0.94, 0.95, 0.97);
 const COLOR_TEXTO_ATENUADO: Color = Color::from_rgb(0.55, 0.60, 0.68);
 const _COLOR_BORDE_SUTIL: Color = Color::from_rgba(0.25, 0.30, 0.40, 0.4);
 
-/// Las 4 Escenas soberanas del Ecualizador.
+/// Las 5 Escenas soberanas del Ecualizador.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EscenaActual {
     Ecualizador = 0,
     EspacioCompresor = 1,
     Reverberacion = 2,
     AutoEqDispositivos = 3,
+    EnrutamientoPipeWire = 4,
 }
 
 /// Mensajes de eventos e interacciones de la interfaz Iced.
@@ -99,6 +103,11 @@ pub enum MensajeUi {
     InstalarApoSistema,
     DesinstalarApoSistema,
     GuardarPresetApo,
+    ConmutarReproductorPipeWire(String, bool),
+    ConmutarModoSelectivoPipeWire(bool),
+    ActualizarListaPipeWire,
+    HabilitarTodosReproductoresPipeWire,
+    DeshabilitarTodosReproductoresPipeWire,
 }
 
 /// Estado global de la aplicacion Iced.
@@ -120,6 +129,8 @@ pub struct EcualizadorIcedApp {
     curva_magnitud_biquad: Vec<(f32, f32)>,
     reduccion_compresor_db: f32,
     pico_salida_db: f32,
+    estado_pipewire: EstadoEnrutadorPipeWire,
+    pipewire_disponible: bool,
 }
 
 impl EcualizadorIcedApp {
@@ -143,6 +154,10 @@ impl EcualizadorIcedApp {
             .map(|d| d.identificador.clone())
             .unwrap_or_else(|| String::from("predeterminado"));
 
+        let mut estado_pipewire = EstadoEnrutadorPipeWire::nuevo();
+        estado_pipewire.sincronizar_con_sistema();
+        let pipewire_disponible = verificar_pipewire_disponible();
+
         let mut app = Self {
             cadena_dsp,
             telemetria,
@@ -161,6 +176,8 @@ impl EcualizadorIcedApp {
             curva_magnitud_biquad: Vec::with_capacity(128),
             reduccion_compresor_db: 0.0,
             pico_salida_db: -96.0,
+            estado_pipewire,
+            pipewire_disponible,
         };
 
         app.recalcular_curva_magnitud();
@@ -479,6 +496,55 @@ impl EcualizadorIcedApp {
                 self.mensaje_notificacion =
                     format!("Preset exportado a: {}", ruta_apo.display());
             }
+            MensajeUi::ConmutarReproductorPipeWire(nombre, habilitado) => {
+                self.estado_pipewire.conmutar_reproductor(&nombre, habilitado);
+                self.mensaje_notificacion = format!(
+                    "Reproductor '{}': {}",
+                    nombre,
+                    if habilitado {
+                        "Ecualizacion activa (Enrutado a DSP)"
+                    } else {
+                        "Bypass directo (Sin procesar)"
+                    }
+                );
+            }
+            MensajeUi::ConmutarModoSelectivoPipeWire(activo) => {
+                self.estado_pipewire.modo_selectivo_activo = activo;
+                self.estado_pipewire.aplicar_enrutamiento_completo();
+                self.mensaje_notificacion = format!(
+                    "Enrutamiento PipeWire: {}",
+                    if activo {
+                        "Modo Selectivo (Solo aplicaciones marcadas)"
+                    } else {
+                        "Modo Global (Todo el audio del sistema)"
+                    }
+                );
+            }
+            MensajeUi::ActualizarListaPipeWire => {
+                self.estado_pipewire.sincronizar_con_sistema();
+                self.mensaje_notificacion = format!(
+                    "Escaneo PipeWire: {} reproductores detectados",
+                    self.estado_pipewire.reproductores.len()
+                );
+            }
+            MensajeUi::HabilitarTodosReproductoresPipeWire => {
+                for rep in &self.estado_pipewire.reproductores {
+                    self.estado_pipewire.aplicaciones_habilitadas.insert(rep.nombre_aplicacion.clone());
+                }
+                for rep in &mut self.estado_pipewire.reproductores {
+                    rep.ecualizacion_habilitada = true;
+                }
+                self.estado_pipewire.aplicar_enrutamiento_completo();
+                self.mensaje_notificacion = String::from("Todos los reproductores fueron habilitados para DSP.");
+            }
+            MensajeUi::DeshabilitarTodosReproductoresPipeWire => {
+                self.estado_pipewire.aplicaciones_habilitadas.clear();
+                for rep in &mut self.estado_pipewire.reproductores {
+                    rep.ecualizacion_habilitada = false;
+                }
+                self.estado_pipewire.aplicar_enrutamiento_completo();
+                self.mensaje_notificacion = String::from("Todos los reproductores quedaron en Bypass directo.");
+            }
         }
         Task::none()
     }
@@ -492,6 +558,7 @@ impl EcualizadorIcedApp {
             EscenaActual::EspacioCompresor => self.construir_escena_espacio_compresor(),
             EscenaActual::Reverberacion => self.construir_escena_reverberacion(),
             EscenaActual::AutoEqDispositivos => self.construir_escena_autoeq_dispositivos(),
+            EscenaActual::EnrutamientoPipeWire => self.construir_escena_enrutamiento_pipewire(),
         };
 
         let pie_telemetria = self.construir_pie_telemetria();
@@ -577,7 +644,20 @@ impl EcualizadorIcedApp {
         )
         .on_press(MensajeUi::CambiarEscena(EscenaActual::AutoEqDispositivos));
 
-        row![btn_eq, btn_esp, btn_rev, btn_autoeq]
+        let etiqueta_pw = if self.pipewire_disponible {
+            format!("5. Reproductores PipeWire ({})", self.estado_pipewire.reproductores.len())
+        } else {
+            format!("5. Reproductores Linux ({})", self.estado_pipewire.reproductores.len())
+        };
+
+        let btn_pipewire = button(
+            text(etiqueta_pw)
+                .size(14)
+                .color(estilo_btn(self.escena_activa == EscenaActual::EnrutamientoPipeWire)),
+        )
+        .on_press(MensajeUi::CambiarEscena(EscenaActual::EnrutamientoPipeWire));
+
+        row![btn_eq, btn_esp, btn_rev, btn_autoeq, btn_pipewire]
             .spacing(10)
             .into()
     }
@@ -592,27 +672,45 @@ impl EcualizadorIcedApp {
         .width(Length::Fill)
         .height(Length::Fixed(190.0));
 
-        // 2. Faders de bandas parametricas
+        // 2. Faders de bandas parametricas con estetica de consola de audio (Obsidian Rack)
         let mut fila_bandas = row![].spacing(8);
 
         // Deslizador de Preamp Maestro
-        let fader_preamp = column![
-            text(format!("{:.1} dB", self.estado_local.ganancia_preamp_db))
-                .size(11)
-                .color(COLOR_AMBAR_SUNLIGHT),
-            slider(
-                -24.0..=24.0,
-                self.estado_local.ganancia_preamp_db,
-                MensajeUi::CambiarPreamp,
-            )
-            .step(0.1)
-            .height(140.0),
-            text("PREAMP").size(10).color(COLOR_AMBAR_SUNLIGHT),
-        ]
-        .spacing(6)
-        .align_x(iced::Alignment::Center);
+        let strip_preamp = container(
+            column![
+                text(format!("{:+0.1} dB", self.estado_local.ganancia_preamp_db))
+                    .size(11)
+                    .color(COLOR_AMBAR_SUNLIGHT),
+                text("+12").size(8).color(COLOR_TEXTO_ATENUADO),
+                slider(
+                    -24.0..=24.0,
+                    self.estado_local.ganancia_preamp_db,
+                    MensajeUi::CambiarPreamp,
+                )
+                .step(0.1)
+                .height(145.0),
+                text("-24").size(8).color(COLOR_TEXTO_ATENUADO),
+                button(text("0 dB").size(9).color(COLOR_TEXTO_CLARO))
+                    .on_press(MensajeUi::CambiarPreamp(0.0)),
+                text("PREAMP")
+                    .size(10)
+                    .color(COLOR_AMBAR_SUNLIGHT),
+            ]
+            .spacing(3)
+            .align_x(iced::Alignment::Center)
+        )
+        .padding(6)
+        .style(|_t: &Theme| container::Style {
+            background: Some(Background::Color(Color::from_rgb(0.06, 0.08, 0.12))),
+            border: Border {
+                color: Color::from_rgba(0.96, 0.62, 0.04, 0.35),
+                width: 1.0,
+                radius: 6.0.into(),
+            },
+            ..Default::default()
+        });
 
-        fila_bandas = fila_bandas.push(fader_preamp);
+        fila_bandas = fila_bandas.push(strip_preamp);
 
         for (idx, banda) in self.estado_local.bandas.iter().enumerate() {
             let etiqueta_frec = if banda.frecuencia_hz >= 1000.0 {
@@ -621,21 +719,70 @@ impl EcualizadorIcedApp {
                 format!("{:.0}", banda.frecuencia_hz)
             };
 
-            let fader = column![
-                text(format!("{:.1}", banda.ganancia_db)).size(11),
-                slider(
-                    -24.0..=24.0,
-                    banda.ganancia_db,
-                    move |val| MensajeUi::CambiarGananciaBanda(idx, val),
-                )
-                .step(0.1)
-                .height(140.0),
-                text(etiqueta_frec).size(10).color(COLOR_TEXTO_ATENUADO),
-            ]
-            .spacing(6)
-            .align_x(iced::Alignment::Center);
+            let color_ganancia = if !banda.activo {
+                COLOR_TEXTO_ATENUADO
+            } else if banda.ganancia_db > 0.05 {
+                COLOR_AMBAR_SUNLIGHT
+            } else if banda.ganancia_db < -0.05 {
+                COLOR_CIAN_ELECTRICO
+            } else {
+                COLOR_TEXTO_CLARO
+            };
 
-            fila_bandas = fila_bandas.push(fader);
+            let texto_db = if banda.ganancia_db > 0.0 {
+                format!("+{:.1}", banda.ganancia_db)
+            } else {
+                format!("{:.1}", banda.ganancia_db)
+            };
+
+            let btn_bypass = if banda.activo {
+                button(text("ON").size(9).color(Color::BLACK))
+                    .on_press(MensajeUi::ConmutarBanda(idx, false))
+            } else {
+                button(text("BYP").size(9).color(COLOR_TEXTO_ATENUADO))
+                    .on_press(MensajeUi::ConmutarBanda(idx, true))
+            };
+
+            let esta_activa = banda.activo;
+            let strip_banda = container(
+                column![
+                    text(texto_db).size(11).color(color_ganancia),
+                    text("+12").size(8).color(Color::from_rgba(0.5, 0.55, 0.65, 0.3)),
+                    slider(
+                        -24.0..=24.0,
+                        banda.ganancia_db,
+                        move |val| MensajeUi::CambiarGananciaBanda(idx, val),
+                    )
+                    .step(0.1)
+                    .height(145.0),
+                    text("-24").size(8).color(Color::from_rgba(0.5, 0.55, 0.65, 0.3)),
+                    btn_bypass,
+                    text(etiqueta_frec)
+                        .size(10)
+                        .color(if esta_activa { COLOR_TEXTO_CLARO } else { COLOR_TEXTO_ATENUADO }),
+                    text(format!("Q {:.1}", banda.factor_q))
+                        .size(8)
+                        .color(COLOR_TEXTO_ATENUADO),
+                ]
+                .spacing(3)
+                .align_x(iced::Alignment::Center)
+            )
+            .padding(6)
+            .style(move |_t: &Theme| container::Style {
+                background: Some(Background::Color(Color::from_rgb(0.07, 0.09, 0.13))),
+                border: Border {
+                    color: if esta_activa {
+                        Color::from_rgba(0.25, 0.30, 0.40, 0.35)
+                    } else {
+                        Color::from_rgba(0.15, 0.18, 0.25, 0.2)
+                    },
+                    width: 1.0,
+                    radius: 6.0.into(),
+                },
+                ..Default::default()
+            });
+
+            fila_bandas = fila_bandas.push(strip_banda);
         }
 
         let panel_faders = scrollable(fila_bandas)
@@ -1022,6 +1169,168 @@ impl EcualizadorIcedApp {
         column![panel_autoeq, space::vertical(), panel_sistema]
             .spacing(16)
             .into()
+    }
+
+    fn construir_escena_enrutamiento_pipewire(&self) -> Element<'_, MensajeUi> {
+        let titulo = text("ENRUTADOR DE STREAMS PIPEWIRE (LINUX)")
+            .size(18)
+            .color(COLOR_AMBAR_SUNLIGHT);
+
+        let descripcion = text(
+            "Identificacion en tiempo real de reproductores emitiendo audio en el sistema. \
+             Permite seleccionar que aplicaciones pasan por la cadena de ecualizacion Poweramp y cuales permanecen en bypass directo."
+        )
+        .size(12)
+        .color(COLOR_TEXTO_ATENUADO);
+
+        // Barra de control de la escena PipeWire
+        let estado_badge = if self.pipewire_disponible {
+            text("● Servidor PipeWire Activo")
+                .size(12)
+                .color(Color::from_rgb(0.06, 0.72, 0.51))
+        } else {
+            text("○ Modo Simulacion Multiplataforma")
+                .size(12)
+                .color(COLOR_CIAN_ELECTRICO)
+        };
+
+        let switch_selectivo = toggler(self.estado_pipewire.modo_selectivo_activo)
+            .label("Modo Selectivo (Solo seleccionados)")
+            .on_toggle(MensajeUi::ConmutarModoSelectivoPipeWire);
+
+        let btn_refrescar = button(text("Escanear Flujos").size(12))
+            .on_press(MensajeUi::ActualizarListaPipeWire);
+
+        let btn_todos = button(text("Ecualizar Todos").size(12))
+            .on_press(MensajeUi::HabilitarTodosReproductoresPipeWire);
+
+        let btn_ninguno = button(text("Bypass General").size(12))
+            .on_press(MensajeUi::DeshabilitarTodosReproductoresPipeWire);
+
+        let barra_control = container(
+            row![
+                column![estado_badge, switch_selectivo].spacing(4),
+                space::horizontal(),
+                btn_refrescar,
+                btn_todos,
+                btn_ninguno,
+            ]
+            .spacing(12)
+            .align_y(iced::Alignment::Center),
+        )
+        .padding(12)
+        .style(|_t: &Theme| container::Style {
+            background: Some(Background::Color(Color::from_rgb(0.06, 0.08, 0.12))),
+            border: Border {
+                color: Color::from_rgba(0.25, 0.30, 0.40, 0.4),
+                width: 1.0,
+                radius: 8.0.into(),
+            },
+            ..Default::default()
+        });
+
+        // Contenido de la lista de reproductores
+        let mut columna_reproductores = column![].spacing(8);
+
+        if self.estado_pipewire.reproductores.is_empty() {
+            let aviso_vacio = container(
+                column![
+                    text("No se detectaron flujos de audio activos en PipeWire.")
+                        .size(15)
+                        .color(COLOR_AMBAR_SUNLIGHT),
+                    text("Inicia la reproduccion de audio en Spotify, Firefox, VLC o tu navegador y presiona 'Escanear Flujos'.")
+                        .size(12)
+                        .color(COLOR_TEXTO_ATENUADO),
+                ]
+                .spacing(8)
+                .align_x(iced::Alignment::Center),
+            )
+            .padding(32)
+            .width(Length::Fill)
+            .align_x(iced::alignment::Horizontal::Center);
+
+            columna_reproductores = columna_reproductores.push(aviso_vacio);
+        } else {
+            for rep in &self.estado_pipewire.reproductores {
+                let nombre_app = rep.nombre_aplicacion.clone();
+                let esta_ecualizado = rep.ecualizacion_habilitada;
+
+                let estado_reproduccion = if rep.esta_reproduciendo {
+                    text("● REPRODUCIENDO SONIDO EN VIVO")
+                        .size(10)
+                        .color(Color::from_rgb(0.06, 0.72, 0.51))
+                } else {
+                    text("○ Inactivo / En Pausa")
+                        .size(10)
+                        .color(COLOR_TEXTO_ATENUADO)
+                };
+
+                let subtexto = if !rep.nombre_medio.is_empty() {
+                    format!("{} | Nodo #{}", rep.nombre_medio, rep.identificador_nodo)
+                } else {
+                    format!("Stream de audio | Nodo #{}", rep.identificador_nodo)
+                };
+
+                let col_info = column![
+                    row![
+                        text(&rep.nombre_aplicacion).size(16).color(COLOR_TEXTO_CLARO),
+                        space::horizontal(),
+                        estado_reproduccion,
+                    ]
+                    .align_y(iced::Alignment::Center),
+                    text(subtexto).size(11).color(COLOR_TEXTO_ATENUADO),
+                ]
+                .spacing(4)
+                .width(Length::Fill);
+
+                let switch_rep = toggler(esta_ecualizado)
+                    .label(if esta_ecualizado {
+                        "ECUALIZANDO CON DSP"
+                    } else {
+                        "PASO DIRECTO (BYPASS)"
+                    })
+                    .on_toggle(move |activo| {
+                        MensajeUi::ConmutarReproductorPipeWire(nombre_app.clone(), activo)
+                    });
+
+                let tarjeta = container(
+                    row![col_info, switch_rep]
+                        .spacing(16)
+                        .align_y(iced::Alignment::Center),
+                )
+                .padding(14)
+                .style(move |_t: &Theme| container::Style {
+                    background: Some(Background::Color(if esta_ecualizado {
+                        Color::from_rgb(0.08, 0.10, 0.15)
+                    } else {
+                        Color::from_rgb(0.05, 0.06, 0.09)
+                    })),
+                    border: Border {
+                        color: if esta_ecualizado {
+                            Color::from_rgba(0.96, 0.62, 0.04, 0.45)
+                        } else {
+                            Color::from_rgba(0.20, 0.25, 0.35, 0.25)
+                        },
+                        width: 1.0,
+                        radius: 8.0.into(),
+                    },
+                    ..Default::default()
+                });
+
+                columna_reproductores = columna_reproductores.push(tarjeta);
+            }
+        }
+
+        let lista_scroll = scrollable(columna_reproductores).height(Length::Fill);
+
+        column![
+            titulo,
+            descripcion,
+            barra_control,
+            lista_scroll,
+        ]
+        .spacing(12)
+        .into()
     }
 
     fn construir_pie_telemetria(&self) -> Element<'_, MensajeUi> {
