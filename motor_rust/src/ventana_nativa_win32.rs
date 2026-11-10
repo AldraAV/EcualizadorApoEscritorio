@@ -125,7 +125,21 @@ impl Default for EnrutamientoWasapiEstado {
 // DEFINICIONES FFI WIN32 Y GDI (user32.dll / gdi32.dll / kernel32.dll)
 // ============================================================================
 
-const WS_OVERLAPPEDWINDOW: u32 = 0x00CF0000;
+#[cfg(not(target_os = "windows"))]
+pub fn ejecutar_ventana_nativa_poweramp(
+    _cadena_dsp: Arc<Mutex<CadenaMaestraDsp>>,
+    _telemetria: Arc<TelemetriaCompartidaVentana>,
+    _enrutamiento: Arc<Mutex<EnrutamientoWasapiEstado>>,
+    _directorio_base: PathBuf,
+) -> Result<(), String> {
+    Err(String::from("La ventana nativa Win32 solo esta disponible en Windows. En Linux se utiliza la interfaz nativa Iced con PipeWire."))
+}
+
+#[cfg(target_os = "windows")]
+mod windows_impl {
+    use super::*;
+
+    const WS_OVERLAPPEDWINDOW: u32 = 0x00CF0000;
 const WS_VISIBLE: u32 = 0x10000000;
 const CS_HREDRAW: u32 = 0x0002;
 const CS_VREDRAW: u32 = 0x0001;
@@ -3804,3 +3818,7 @@ pub fn ejecutar_ventana_nativa_poweramp(
         Ok(())
     }
 }
+
+}
+#[cfg(target_os = "windows")]
+pub use windows_impl::ejecutar_ventana_nativa_poweramp;

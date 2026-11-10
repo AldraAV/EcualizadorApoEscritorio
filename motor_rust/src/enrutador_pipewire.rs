@@ -302,7 +302,7 @@ pub fn aplicar_enrutamiento_sistema(
     #[cfg(target_os = "linux")]
     {
         // En Linux, usar pw-link para conectar/desconectar los puertos del stream
-        let accion = if habilitar { "vincular" } else { "desvincular" };
+        let _accion = if habilitar { "vincular" } else { "desvincular" };
         let flag_desvincular = if habilitar { "" } else { "-d" };
 
         let mut comando = Command::new("pw-link");

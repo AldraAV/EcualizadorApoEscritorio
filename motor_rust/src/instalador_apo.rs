@@ -14,7 +14,51 @@ use std::ptr;
 use crate::apo_com_windows::CLSID_APO_SOBERANO_TEXTO;
 
 // Tipos y constantes de la API Win32 del Registro (advapi32.dll)
-type Hkey = usize;
+#[derive(Debug, Clone, Default)]
+pub struct EstadoInstalacionApo {
+    pub dll_instalada: bool,
+    pub ruta_dll: PathBuf,
+    pub com_registrado: bool,
+    pub apo_registrado: bool,
+    pub proteccion_audiodg_desactivada: bool,
+    pub dispositivos_enlazados: Vec<String>,
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn ruta_oficial_directorio_apo() -> PathBuf {
+    PathBuf::from("/etc/aldra_poweramp")
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn ruta_oficial_dll_apo() -> PathBuf {
+    PathBuf::from("/etc/aldra_poweramp/motor_ecualizador_poweramp.so")
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn consultar_estado_instalacion_apo() -> EstadoInstalacionApo {
+    EstadoInstalacionApo::default()
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn instalar_y_activar_apo(_ruta: &Path) -> Result<(), String> {
+    Err(String::from("El subsistema APO solo esta disponible en Windows."))
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn desinstalar_apo() -> Result<(), String> {
+    Err(String::from("El subsistema APO solo esta disponible en Windows."))
+}
+
+#[cfg(not(target_os = "windows"))]
+pub fn solicitar_elevacion_administrador(_arg: &str) -> bool {
+    false
+}
+
+#[cfg(target_os = "windows")]
+mod windows_impl {
+    use super::*;
+
+    type Hkey = usize;
 
 #[allow(dead_code)]
 const HKEY_CLASSES_ROOT: Hkey = 0x80000000;
@@ -174,16 +218,7 @@ fn abrir_o_crear_clave(raiz: Hkey, subclave: &str) -> Result<Hkey, String> {
     }
 }
 
-/// Estado de la instalacion del APO en Windows.
-#[derive(Debug, Clone)]
-pub struct EstadoInstalacionApo {
-    pub dll_instalada: bool,
-    pub ruta_dll: PathBuf,
-    pub com_registrado: bool,
-    pub apo_registrado: bool,
-    pub proteccion_audiodg_desactivada: bool,
-    pub dispositivos_enlazados: Vec<String>,
-}
+// EstadoInstalacionApo unificado al inicio del archivo
 
 /// Directorio oficial donde se hospeda la DLL del APO en `Program Files`.
 pub fn ruta_oficial_directorio_apo() -> PathBuf {
@@ -496,3 +531,7 @@ pub fn solicitar_elevacion_administrador(argumentos_extra: &str) -> bool {
         false
     }
 }
+
+}
+#[cfg(target_os = "windows")]
+pub use windows_impl::*;

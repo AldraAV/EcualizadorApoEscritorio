@@ -52,7 +52,44 @@ pub struct DispositivoAudioWindows {
     pub es_predeterminado: bool,
 }
 
-const CLSID_MMDEVICE_ENUMERATOR: Guid = Guid {
+#[cfg(not(target_os = "windows"))]
+pub fn enumerar_dispositivos_salida_windows() -> Result<Vec<DispositivoAudioWindows>, String> {
+    Ok(Vec::new())
+}
+
+#[cfg(not(target_os = "windows"))]
+pub struct CapturadorWasapiLoopback {
+    pub frecuencia_muestreo: u32,
+}
+
+#[cfg(not(target_os = "windows"))]
+impl CapturadorWasapiLoopback {
+    pub fn inicializar_con_dispositivo(_id: Option<&str>) -> Result<Self, String> {
+        Err(String::from("WASAPI solo disponible en Windows"))
+    }
+    pub fn leer_muestras_estereo(&mut self, _bufer: &mut Vec<(f32, f32)>) -> bool {
+        false
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+pub struct RenderizadorWasapiDirecto;
+
+#[cfg(not(target_os = "windows"))]
+impl RenderizadorWasapiDirecto {
+    pub fn inicializar_con_dispositivo(_id: Option<&str>) -> Result<Self, String> {
+        Err(String::from("WASAPI solo disponible en Windows"))
+    }
+    pub fn escribir_muestras_estereo(&mut self, _pares: &[(f32, f32)]) -> usize {
+        0
+    }
+}
+
+#[cfg(target_os = "windows")]
+mod windows_impl {
+    use super::*;
+
+    const CLSID_MMDEVICE_ENUMERATOR: Guid = Guid {
     data1: 0xBCDE0395,
     data2: 0xE52F,
     data3: 0x467C,
@@ -837,3 +874,7 @@ impl Drop for RenderizadorWasapiDirecto {
         }
     }
 }
+
+}
+#[cfg(target_os = "windows")]
+pub use windows_impl::*;

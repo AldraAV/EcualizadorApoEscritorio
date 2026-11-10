@@ -99,9 +99,16 @@ pub const DERECHOS_APO: &str = "Jose Aldra Aviles Cardenas";
 const WAVE_FORMAT_IEEE_FLOAT: u16 = 0x0003;
 const WAVE_FORMAT_EXTENSIBLE: u16 = 0xFFFE;
 
+#[cfg(target_os = "windows")]
 #[link(name = "ole32")]
 extern "system" {
     fn CoTaskMemAlloc(cb: usize) -> *mut c_void;
+}
+
+#[cfg(not(target_os = "windows"))]
+unsafe fn CoTaskMemAlloc(cb: usize) -> *mut c_void {
+    let disposicion = std::alloc::Layout::from_size_align(cb, 8).unwrap_or(std::alloc::Layout::new::<u8>());
+    std::alloc::alloc(disposicion) as *mut c_void
 }
 
 /// `WAVEFORMATEX` empaquetado (tal como lo entrega `IAudioMediaType::GetAudioFormat`).
