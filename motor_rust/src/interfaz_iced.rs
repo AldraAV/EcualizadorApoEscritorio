@@ -63,6 +63,282 @@ pub enum EscenaActual {
     EnrutamientoPipeWire = 4,
 }
 
+/// Definicion de un preset grafico estandar de 10 bandas ISO.
+#[derive(Debug, Clone, Copy)]
+pub struct PresetGraficoDef {
+    pub nombre: &'static str,
+    pub ganancias_db: [f64; 10],
+    pub preamp_db: f64,
+    pub descripcion: &'static str,
+}
+
+/// Catalogo oficial de los 23 presets graficos de fabrica de Poweramp.
+pub const PRESETS_POWERAMP_GRAFICOS: [PresetGraficoDef; 23] = [
+    PresetGraficoDef {
+        nombre: "Plano (0 dB)",
+        ganancias_db: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        preamp_db: 0.0,
+        descripcion: "Respuesta plana neutra de referencia",
+    },
+    PresetGraficoDef {
+        nombre: "Bass Booster",
+        ganancias_db: [7.5, 6.0, 4.5, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        preamp_db: -4.0,
+        descripcion: "Realce calido de frecuencias sub-graves y bajas",
+    },
+    PresetGraficoDef {
+        nombre: "Bass Heavy",
+        ganancias_db: [9.0, 7.5, 5.5, 3.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        preamp_db: -5.0,
+        descripcion: "Graves masivos y profundos para bass music",
+    },
+    PresetGraficoDef {
+        nombre: "Punchy Bass",
+        ganancias_db: [4.0, 8.0, 6.0, 2.5, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        preamp_db: -4.0,
+        descripcion: "Pegada de bombo seco y definicion ritmica",
+    },
+    PresetGraficoDef {
+        nombre: "Soft Bass",
+        ganancias_db: [4.5, 3.5, 2.0, 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+        preamp_db: -2.0,
+        descripcion: "Calidez suave y redondeada sin distorsion",
+    },
+    PresetGraficoDef {
+        nombre: "Bass & Treble",
+        ganancias_db: [6.0, 4.5, 2.0, 0.0, -1.0, 0.0, 1.5, 3.5, 5.5, 6.5],
+        preamp_db: -3.5,
+        descripcion: "Curva clasica en V para realzar extremos",
+    },
+    PresetGraficoDef {
+        nombre: "Treble",
+        ganancias_db: [0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.5, 4.5, 6.5, 7.5],
+        preamp_db: -4.0,
+        descripcion: "Claridad y presencia en frecuencias altas",
+    },
+    PresetGraficoDef {
+        nombre: "Treble Booster",
+        ganancias_db: [0.0, 0.0, 0.0, 0.0, 0.0, 1.5, 3.5, 6.0, 8.5, 10.0],
+        preamp_db: -5.0,
+        descripcion: "Maximo realce para platillos y detalles de aire",
+    },
+    PresetGraficoDef {
+        nombre: "Soft Treble",
+        ganancias_db: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.0, 3.0, 3.5],
+        preamp_db: -2.0,
+        descripcion: "Apertura suave y relajada sin fatiga",
+    },
+    PresetGraficoDef {
+        nombre: "Rock",
+        ganancias_db: [4.8, 3.2, -1.5, -2.8, -1.0, 1.5, 3.0, 4.0, 4.5, 5.0],
+        preamp_db: -2.5,
+        descripcion: "Bombo con cuerpo, medios limpios y guitarras nitidas",
+    },
+    PresetGraficoDef {
+        nombre: "Pop",
+        ganancias_db: [-1.5, 1.5, 3.5, 4.5, 3.0, -1.0, -1.5, -1.0, 2.0, 3.5],
+        preamp_db: -2.0,
+        descripcion: "Voces cristalinas al frente y ritmo compensado",
+    },
+    PresetGraficoDef {
+        nombre: "Techno",
+        ganancias_db: [5.5, 4.5, 1.0, 0.0, -2.0, 2.0, 1.0, 3.5, 5.0, 5.5],
+        preamp_db: -3.0,
+        descripcion: "Lineas de bajo potentes y sintetizadores cortantes",
+    },
+    PresetGraficoDef {
+        nombre: "Dance",
+        ganancias_db: [6.0, 5.0, 2.0, 0.0, -1.5, 1.5, 2.5, 4.0, 5.0, 5.5],
+        preamp_db: -3.5,
+        descripcion: "Sonido de club dinamico y envolvente",
+    },
+    PresetGraficoDef {
+        nombre: "Clasica",
+        ganancias_db: [4.5, 3.5, 2.5, 2.0, -1.5, -1.5, 0.0, 2.5, 3.5, 4.0],
+        preamp_db: -2.0,
+        descripcion: "Amplitud acustica orquestal y cuerdas calidas",
+    },
+    PresetGraficoDef {
+        nombre: "Live / En Vivo",
+        ganancias_db: [-2.0, 0.0, 2.0, 3.0, 3.5, 3.5, 3.0, 2.0, 1.5, 1.0],
+        preamp_db: -2.0,
+        descripcion: "Espacialidad y sensacion de sala de concierto",
+    },
+    PresetGraficoDef {
+        nombre: "Party / Fiesta",
+        ganancias_db: [5.0, 4.0, 2.0, 0.0, 0.0, 0.0, 0.0, 2.0, 4.0, 5.0],
+        preamp_db: -3.0,
+        descripcion: "Volumen percibido elevado y extremos reforzados",
+    },
+    PresetGraficoDef {
+        nombre: "Ska",
+        ganancias_db: [-1.5, -2.5, -1.5, 0.0, 2.5, 3.5, 4.0, 4.5, 5.0, 4.0],
+        preamp_db: -2.5,
+        descripcion: "Metales agudos y ritmo en contratiempo destacado",
+    },
+    PresetGraficoDef {
+        nombre: "Soft / Suave",
+        ganancias_db: [3.0, 1.5, 0.0, -1.0, -1.0, 0.0, 1.0, 2.0, 3.0, 3.5],
+        preamp_db: -2.0,
+        descripcion: "Atenuacion de asperezas para escucha prolongada",
+    },
+    PresetGraficoDef {
+        nombre: "Reggae",
+        ganancias_db: [0.0, 0.0, -0.5, -3.0, 0.0, 4.0, 4.5, 3.0, 0.0, 0.0],
+        preamp_db: -2.5,
+        descripcion: "Bajo redondo y caja ritmica acentuada",
+    },
+    PresetGraficoDef {
+        nombre: "Vocal / Voz Clara",
+        ganancias_db: [-3.5, -2.5, 0.0, 2.5, 4.0, 4.5, 3.5, 1.5, 0.0, -2.0],
+        preamp_db: -2.0,
+        descripcion: "Maxima inteligibilidad vocal para podcast y dialogos",
+    },
+    PresetGraficoDef {
+        nombre: "Acustico",
+        ganancias_db: [3.5, 2.5, 1.5, 1.0, 1.5, 2.0, 3.0, 3.5, 3.0, 2.0],
+        preamp_db: -2.0,
+        descripcion: "Guitarras de madera, piano y percusion organica",
+    },
+    PresetGraficoDef {
+        nombre: "Electronica",
+        ganancias_db: [6.5, 5.5, 2.0, 0.0, -1.5, 2.5, 1.5, 3.5, 5.5, 6.0],
+        preamp_db: -3.5,
+        descripcion: "Sintetizadores analogicos y sub-frecuencias profundas",
+    },
+    PresetGraficoDef {
+        nombre: "Harman Target",
+        ganancias_db: [5.5, 4.0, 1.5, -1.0, -0.5, 0.0, 1.0, 3.5, 1.0, 0.0],
+        preamp_db: -2.5,
+        descripcion: "Curva objetivo psicoacustica Harman de alta fidelidad",
+    },
+];
+
+/// Definicion de una banda para un preset parametrico.
+#[derive(Debug, Clone, Copy)]
+pub struct BandaParametricaDef {
+    pub frecuencia_hz: f64,
+    pub factor_q: f64,
+    pub ganancia_db: f64,
+    pub tipo: TipoFiltro,
+}
+
+/// Definicion de un preset parametrico (PEQ).
+#[derive(Debug, Clone, Copy)]
+pub struct PresetParametricoDef {
+    pub nombre: &'static str,
+    pub bandas: &'static [BandaParametricaDef],
+    pub preamp_db: f64,
+    pub descripcion: &'static str,
+}
+
+/// Catalogo oficial de los 8 presets parametricos maestros de Poweramp.
+pub const PRESETS_POWERAMP_PARAMETRICOS: [PresetParametricoDef; 8] = [
+    PresetParametricoDef {
+        nombre: "PEQ: Harman Reference",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 105.0, factor_q: 0.71, ganancia_db: 5.5, tipo: TipoFiltro::EstanteGraves },
+            BandaParametricaDef { frecuencia_hz: 200.0, factor_q: 1.00, ganancia_db: -1.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 1200.0, factor_q: 1.20, ganancia_db: 1.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 3000.0, factor_q: 1.41, ganancia_db: 4.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 6000.0, factor_q: 2.00, ganancia_db: -2.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 10000.0, factor_q: 0.71, ganancia_db: 1.5, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -3.0,
+        descripcion: "Curva objetivo Harman con estantes Butterworth y ganancia pinna",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Bass Warmth & Sub-Punch",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 35.0, factor_q: 0.80, ganancia_db: 6.5, tipo: TipoFiltro::EstanteGraves },
+            BandaParametricaDef { frecuencia_hz: 75.0, factor_q: 1.30, ganancia_db: 4.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 220.0, factor_q: 1.10, ganancia_db: -2.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 2500.0, factor_q: 1.20, ganancia_db: 2.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 11000.0, factor_q: 0.71, ganancia_db: 3.0, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -4.0,
+        descripcion: "Sub-graves extendidos con filtro anti-barro en 220 Hz",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Vocal Clarity & Air",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 80.0, factor_q: 0.71, ganancia_db: 0.0, tipo: TipoFiltro::PasoAlto },
+            BandaParametricaDef { frecuencia_hz: 320.0, factor_q: 1.50, ganancia_db: -3.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 1500.0, factor_q: 1.20, ganancia_db: 2.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 3500.0, factor_q: 1.40, ganancia_db: 4.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 7500.0, factor_q: 2.50, ganancia_db: -2.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 14000.0, factor_q: 0.71, ganancia_db: 5.0, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -2.5,
+        descripcion: "Filtro pasa-altos 80Hz, supresion de caja y aire en 14kHz",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Acoustic Intimate",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 50.0, factor_q: 0.71, ganancia_db: -2.0, tipo: TipoFiltro::EstanteGraves },
+            BandaParametricaDef { frecuencia_hz: 140.0, factor_q: 1.10, ganancia_db: 3.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 650.0, factor_q: 1.20, ganancia_db: -2.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 2800.0, factor_q: 1.30, ganancia_db: 3.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 8500.0, factor_q: 0.80, ganancia_db: 2.5, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -2.0,
+        descripcion: "Resonancia calida de caja acustica y ataque de cuerdas",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Electronic EDM Club",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 42.0, factor_q: 1.20, ganancia_db: 8.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 95.0, factor_q: 1.40, ganancia_db: 5.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 450.0, factor_q: 1.00, ganancia_db: -3.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 3200.0, factor_q: 1.30, ganancia_db: 3.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 12500.0, factor_q: 0.71, ganancia_db: 6.0, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -5.0,
+        descripcion: "Sub-graves viscerales a 42Hz, pegada a 95Hz y brillo extremo",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Rock Punch & Bite",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 60.0, factor_q: 1.30, ganancia_db: 5.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 120.0, factor_q: 1.20, ganancia_db: 3.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 750.0, factor_q: 1.10, ganancia_db: -4.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 2600.0, factor_q: 1.40, ganancia_db: 4.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 9000.0, factor_q: 0.80, ganancia_db: 3.0, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: -3.5,
+        descripcion: "Bite de guitarra electrica en 2.6kHz y scoop de medios",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Gaming Tactical & Steps",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 65.0, factor_q: 1.00, ganancia_db: -3.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 120.0, factor_q: 2.00, ganancia_db: 4.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 1500.0, factor_q: 1.50, ganancia_db: 3.5, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 3800.0, factor_q: 2.00, ganancia_db: 6.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 8000.0, factor_q: 1.50, ganancia_db: 3.0, tipo: TipoFiltro::PicoParametrico },
+        ],
+        preamp_db: -3.0,
+        descripcion: "Realce quirurgico de pisadas en 120Hz y disparos en 3.8kHz",
+    },
+    PresetParametricoDef {
+        nombre: "PEQ: Monitor Neutral 10-Band",
+        bandas: &[
+            BandaParametricaDef { frecuencia_hz: 31.5, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::EstanteGraves },
+            BandaParametricaDef { frecuencia_hz: 63.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 125.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 250.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 500.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 1000.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 2000.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 4000.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 8000.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::PicoParametrico },
+            BandaParametricaDef { frecuencia_hz: 16000.0, factor_q: 1.41, ganancia_db: 0.0, tipo: TipoFiltro::EstanteAgudos },
+        ],
+        preamp_db: 0.0,
+        descripcion: "Monitor neutro de estudio de 10 bandas parametricas a 0 dB",
+    },
+];
+
 /// Localiza el archivo `auto_eq.db` en multiples rutas relativas y absolutas posibles.
 fn localizar_archivo_autoeq(base: &std::path::Path) -> Option<PathBuf> {
     let mut candidatos = vec![
@@ -97,6 +373,7 @@ pub enum MensajeUi {
     ConmutarEcualizador(bool),
     ConmutarLimitador(bool),
     ConmutarModoParametrico(bool),
+    ResetearPlano,
     CambiarPreamp(f64),
     CambiarGananciaBanda(usize, f64),
     CambiarFrecuenciaBanda(usize, f64),
@@ -106,6 +383,8 @@ pub enum MensajeUi {
     AgregarBandaParametrica,
     EliminarBandaParametrica(usize),
     AplicarPresetFabrica(&'static str),
+    AplicarPresetParametrico(&'static str),
+    ConmutarSubpestanaPresets(bool),
     ConmutarBanda(usize, bool),
     ConmutarTono(bool),
     CambiarTonoGraves(f64),
@@ -120,6 +399,7 @@ pub enum MensajeUi {
     CambiarCompLanzamiento(f64),
     CambiarCompSidechain(f64),
     CambiarCompMaquillaje(f64),
+    AplicarPresetCompresor(&'static str),
     ConmutarReverb(bool),
     CambiarRevTamano(f64),
     CambiarRevPreretardo(f64),
@@ -164,6 +444,7 @@ pub struct EcualizadorIcedApp {
     estado_pipewire: EstadoEnrutadorPipeWire,
     pipewire_disponible: bool,
     banda_seleccionada_idx: usize,
+    subpestana_presets_parametrico: bool,
 }
 
 impl EcualizadorIcedApp {
@@ -212,6 +493,7 @@ impl EcualizadorIcedApp {
             estado_pipewire,
             pipewire_disponible,
             banda_seleccionada_idx: 0,
+            subpestana_presets_parametrico: false,
         };
 
         app.recalcular_curva_magnitud();
@@ -304,7 +586,82 @@ impl EcualizadorIcedApp {
             }
             MensajeUi::ConmutarModoParametrico(modo) => {
                 self.estado_local.modo_parametrico = modo;
+                if !modo {
+                    // Al conmutar a Modo Grafico, asegurar las 10 bandas ISO estandar
+                    let frecs_iso = [31.5, 63.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0];
+                    if self.estado_local.bandas.len() != 10 {
+                        self.estado_local.bandas = frecs_iso
+                            .iter()
+                            .enumerate()
+                            .map(|(i, &f)| {
+                                BandaParametrica::nueva(
+                                    i + 1,
+                                    f,
+                                    1.41,
+                                    0.0,
+                                    if i == 0 {
+                                        TipoFiltro::EstanteGraves
+                                    } else if i == 9 {
+                                        TipoFiltro::EstanteAgudos
+                                    } else {
+                                        TipoFiltro::PicoParametrico
+                                    },
+                                )
+                            })
+                            .collect();
+                    } else {
+                        for (i, &f) in frecs_iso.iter().enumerate() {
+                            self.estado_local.bandas[i].frecuencia_hz = f;
+                            self.estado_local.bandas[i].factor_q = 1.41;
+                            if i == 0 {
+                                self.estado_local.bandas[i].tipo = TipoFiltro::EstanteGraves;
+                            } else if i == 9 {
+                                self.estado_local.bandas[i].tipo = TipoFiltro::EstanteAgudos;
+                            } else {
+                                self.estado_local.bandas[i].tipo = TipoFiltro::PicoParametrico;
+                            }
+                        }
+                    }
+                }
                 self.sincronizar_dsp_e_ipc();
+                self.mensaje_notificacion = format!(
+                    "Modo ecualizador: {}",
+                    if modo { "Parametrico Continuo (Fc, Q, Filtros)" } else { "Grafico Fijo (10 Bandas ISO)" }
+                );
+            }
+            MensajeUi::ConmutarSubpestanaPresets(es_param) => {
+                self.subpestana_presets_parametrico = es_param;
+            }
+            MensajeUi::ResetearPlano => {
+                let frecs_iso = [31.5, 63.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0];
+                self.estado_local.bandas = frecs_iso
+                    .iter()
+                    .enumerate()
+                    .map(|(i, &f)| {
+                        BandaParametrica::nueva(
+                            i + 1,
+                            f,
+                            1.41,
+                            0.0,
+                            if i == 0 {
+                                TipoFiltro::EstanteGraves
+                            } else if i == 9 {
+                                TipoFiltro::EstanteAgudos
+                            } else {
+                                TipoFiltro::PicoParametrico
+                            },
+                        )
+                    })
+                    .collect();
+                self.estado_local.ganancia_preamp_db = 0.0;
+                self.estado_local.tono.graves_ganancia_db = 0.0;
+                self.estado_local.tono.agudos_ganancia_db = 0.0;
+                self.estado_local.nombre_perfil = String::from("Plano (0 dB)");
+                self.estado_local.modo_parametrico = false;
+                self.banda_seleccionada_idx = 0;
+                self.escena_activa = EscenaActual::Ecualizador;
+                self.sincronizar_dsp_e_ipc();
+                self.mensaje_notificacion = String::from("Ecualizador reiniciado a Plano puro 0 dB");
             }
             MensajeUi::SeleccionarBandaParaEdicion(idx) => {
                 if idx < self.estado_local.bandas.len() {
@@ -348,53 +705,65 @@ impl EcualizadorIcedApp {
                 }
             }
             MensajeUi::AplicarPresetFabrica(nombre) => {
-                let presets_fabrica: [(&'static str, &[f64], f64); 10] = [
-                    ("Plano (0 dB)", &[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0),
-                    ("Bass Booster", &[7.5, 6.5, 4.5, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], -4.0),
-                    ("Bass & Treble", &[5.5, 4.5, 2.5, 0.0, -1.0, 0.0, 1.5, 3.5, 5.0, 6.0], -3.0),
-                    ("Rock", &[4.8, 3.2, -1.5, -2.8, -1.0, 1.5, 3.0, 4.0, 4.5, 5.0], -2.5),
-                    ("Pop", &[-1.5, 1.5, 3.5, 4.5, 3.0, -1.0, -1.5, -1.0, 2.0, 3.5], -2.0),
-                    ("Vocal / Voz Clara", &[-4.0, -2.5, 0.0, 2.5, 4.0, 4.5, 3.5, 1.5, 0.0, -2.0], -2.0),
-                    ("Clasica", &[4.5, 3.5, 2.5, 2.0, -1.5, -1.5, 0.0, 2.5, 3.5, 4.0], -2.0),
-                    ("Club / Dance", &[5.5, 4.5, 2.0, 0.0, -2.0, 2.0, 1.0, 3.5, 5.0, 5.5], -3.0),
-                    ("Treble Booster", &[0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.5, 4.5, 6.5, 8.0], -4.0),
-                    ("Harman Target", &[5.5, 4.0, 1.5, -1.0, -0.5, 0.0, 1.0, 3.5, 1.0, 0.0], -2.5),
-                ];
-
-                if let Some(&(_, ganancias, preamp)) = presets_fabrica.iter().find(|p| p.0 == nombre) {
+                if let Some(p) = PRESETS_POWERAMP_GRAFICOS.iter().find(|p| p.nombre == nombre) {
                     let frecs_iso = [31.5, 63.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0];
-                    if self.estado_local.bandas.len() != 10 {
-                        self.estado_local.bandas = frecs_iso
-                            .iter()
-                            .enumerate()
-                            .map(|(i, &f)| {
-                                BandaParametrica::nueva(
-                                    i + 1,
-                                    f,
-                                    1.41,
-                                    0.0,
-                                    if i == 0 {
-                                        TipoFiltro::EstanteGraves
-                                    } else if i == 9 {
-                                        TipoFiltro::EstanteAgudos
-                                    } else {
-                                        TipoFiltro::PicoParametrico
-                                    },
-                                )
-                            })
-                            .collect();
-                    }
-                    for (i, &g) in ganancias.iter().enumerate() {
-                        if i < self.estado_local.bandas.len() {
-                            self.estado_local.bandas[i].ganancia_db = g;
-                            self.estado_local.bandas[i].activo = true;
-                        }
-                    }
-                    self.estado_local.ganancia_preamp_db = preamp;
-                    self.estado_local.nombre_perfil = format!("Preset: {}", nombre);
+                    self.estado_local.bandas = frecs_iso
+                        .iter()
+                        .enumerate()
+                        .map(|(i, &f)| {
+                            BandaParametrica::nueva(
+                                i + 1,
+                                f,
+                                1.41,
+                                p.ganancias_db[i],
+                                if i == 0 {
+                                    TipoFiltro::EstanteGraves
+                                } else if i == 9 {
+                                    TipoFiltro::EstanteAgudos
+                                } else {
+                                    TipoFiltro::PicoParametrico
+                                },
+                            )
+                        })
+                        .collect();
+                    self.estado_local.ganancia_preamp_db = p.preamp_db;
+                    self.estado_local.nombre_perfil = format!("Preset: {}", p.nombre);
+                    self.estado_local.modo_parametrico = false;
+                    self.estado_local.ecualizador_activo = true;
                     self.banda_seleccionada_idx = 0;
+                    self.escena_activa = EscenaActual::Ecualizador;
                     self.sincronizar_dsp_e_ipc();
-                    self.mensaje_notificacion = format!("Preset '{}' aplicado con exito", nombre);
+                    self.mensaje_notificacion = format!("Preset '{}' aplicado (10 bandas ISO)", p.nombre);
+                }
+            }
+            MensajeUi::AplicarPresetParametrico(nombre) => {
+                if let Some(p) = PRESETS_POWERAMP_PARAMETRICOS.iter().find(|p| p.nombre == nombre) {
+                    self.estado_local.bandas = p
+                        .bandas
+                        .iter()
+                        .enumerate()
+                        .map(|(i, b)| {
+                            BandaParametrica::nueva(
+                                i + 1,
+                                b.frecuencia_hz,
+                                b.factor_q,
+                                b.ganancia_db,
+                                b.tipo,
+                            )
+                        })
+                        .collect();
+                    self.estado_local.ganancia_preamp_db = p.preamp_db;
+                    self.estado_local.nombre_perfil = format!("PEQ: {}", p.nombre);
+                    self.estado_local.modo_parametrico = true;
+                    self.estado_local.ecualizador_activo = true;
+                    self.banda_seleccionada_idx = 0;
+                    self.escena_activa = EscenaActual::Ecualizador;
+                    self.sincronizar_dsp_e_ipc();
+                    self.mensaje_notificacion = format!(
+                        "Preset Parametrico '{}' aplicado ({} bandas)",
+                        p.nombre,
+                        p.bandas.len()
+                    );
                 }
             }
             MensajeUi::CambiarPreamp(ganancia_db) => {
@@ -431,10 +800,12 @@ impl EcualizadorIcedApp {
             }
             MensajeUi::CambiarTonoGraves(ganancia_db) => {
                 self.estado_local.tono.graves_ganancia_db = ganancia_db;
+                self.estado_local.tono.tono_activo = true;
                 self.sincronizar_dsp_e_ipc();
             }
             MensajeUi::CambiarTonoAgudos(ganancia_db) => {
                 self.estado_local.tono.agudos_ganancia_db = ganancia_db;
+                self.estado_local.tono.tono_activo = true;
                 self.sincronizar_dsp_e_ipc();
             }
             MensajeUi::CambiarBalance(bal) => {
@@ -455,6 +826,9 @@ impl EcualizadorIcedApp {
             }
             MensajeUi::CambiarCompLimite(db) => {
                 self.estado_local.compresor.limite_db = db;
+                if db < -0.1 {
+                    self.estado_local.compresor.activo = true;
+                }
                 self.sincronizar_dsp_e_ipc();
             }
             MensajeUi::CambiarCompProporcion(ratio) => {
@@ -475,7 +849,44 @@ impl EcualizadorIcedApp {
             }
             MensajeUi::CambiarCompMaquillaje(db) => {
                 self.estado_local.compresor.ganancia_maquillaje_db = db;
+                if db.abs() > 0.1 {
+                    self.estado_local.compresor.activo = true;
+                }
                 self.sincronizar_dsp_e_ipc();
+            }
+            MensajeUi::AplicarPresetCompresor(nombre) => {
+                match nombre {
+                    "Suave / Mastering" => {
+                        self.estado_local.compresor.activo = true;
+                        self.estado_local.compresor.limite_db = -12.0;
+                        self.estado_local.compresor.proporcion = 2.0;
+                        self.estado_local.compresor.ataque_ms = 30.0;
+                        self.estado_local.compresor.lanzamiento_ms = 150.0;
+                        self.estado_local.compresor.frecuencia_sidechain_hz = 90.0;
+                        self.estado_local.compresor.ganancia_maquillaje_db = 2.0;
+                    }
+                    "Pegada / Punch" => {
+                        self.estado_local.compresor.activo = true;
+                        self.estado_local.compresor.limite_db = -20.0;
+                        self.estado_local.compresor.proporcion = 4.0;
+                        self.estado_local.compresor.ataque_ms = 10.0;
+                        self.estado_local.compresor.lanzamiento_ms = 80.0;
+                        self.estado_local.compresor.frecuencia_sidechain_hz = 120.0;
+                        self.estado_local.compresor.ganancia_maquillaje_db = 4.5;
+                    }
+                    "Radio / Agresivo" => {
+                        self.estado_local.compresor.activo = true;
+                        self.estado_local.compresor.limite_db = -28.0;
+                        self.estado_local.compresor.proporcion = 8.0;
+                        self.estado_local.compresor.ataque_ms = 2.0;
+                        self.estado_local.compresor.lanzamiento_ms = 40.0;
+                        self.estado_local.compresor.frecuencia_sidechain_hz = 160.0;
+                        self.estado_local.compresor.ganancia_maquillaje_db = 8.0;
+                    }
+                    _ => {}
+                }
+                self.sincronizar_dsp_e_ipc();
+                self.mensaje_notificacion = format!("Compresor: preset '{}' activado", nombre);
             }
             MensajeUi::ConmutarReverb(activo) => {
                 self.estado_local.reverberacion.activo = activo;
@@ -499,6 +910,9 @@ impl EcualizadorIcedApp {
             }
             MensajeUi::CambiarRevMezclado(mezcla) => {
                 self.estado_local.reverberacion.mezclado = mezcla;
+                if mezcla > 0.005 {
+                    self.estado_local.reverberacion.activo = true;
+                }
                 self.sincronizar_dsp_e_ipc();
             }
             MensajeUi::AplicarPresetReverb(nombre) => {
@@ -533,7 +947,7 @@ impl EcualizadorIcedApp {
                             mezclado: 0.40,
                         };
                     }
-                    "Placa" => {
+                    "Placa" | "Placa Metalica" => {
                         self.estado_local.reverberacion = ParametrosReverberacion {
                             activo: true,
                             tamano: 0.50,
@@ -546,13 +960,14 @@ impl EcualizadorIcedApp {
                     _ => {}
                 }
                 self.sincronizar_dsp_e_ipc();
+                self.mensaje_notificacion = format!("Reverberacion: preset '{}' activado", nombre);
             }
             MensajeUi::ConsultaAutoEqCambiada(texto) => {
                 self.consulta_autoeq = texto;
             }
             MensajeUi::EjecutarBusquedaAutoEq => {
                 if let Some(ruta_db) = localizar_archivo_autoeq(&self.directorio_base) {
-                    match buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 30) {
+                    match buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 40) {
                         Ok(res) => {
                             let total = res.len();
                             self.resultados_autoeq = res;
@@ -573,15 +988,20 @@ impl EcualizadorIcedApp {
                 if let Some(ruta_db) = localizar_archivo_autoeq(&self.directorio_base) {
                     match cargar_preset_autoeq_por_consulta(&ruta_db, &nombre_modelo) {
                         Ok(mut nuevo_estado) => {
-                            nuevo_estado.modo_parametrico = true;
                             nuevo_estado.ecualizador_activo = true;
+                            let nombre = nuevo_estado.nombre_perfil.clone();
+                            let es_param = nuevo_estado.modo_parametrico;
+                            let num_bandas = nuevo_estado.bandas.len();
                             self.estado_local = nuevo_estado;
                             self.banda_seleccionada_idx = 0;
-                            self.sincronizar_dsp_e_ipc();
-                            self.mensaje_notificacion =
-                                format!("Perfil AutoEQ aplicado: {}", nombre_modelo);
-                            // Cambiar a la escena del ecualizador para ver inmediatamente los faders y la curva
                             self.escena_activa = EscenaActual::Ecualizador;
+                            self.sincronizar_dsp_e_ipc();
+                            self.mensaje_notificacion = format!(
+                                "Perfil AutoEQ '{}' aplicado con exito ({} bandas {})",
+                                nombre,
+                                num_bandas,
+                                if es_param { "Parametrico" } else { "Grafico" }
+                            );
                         }
                         Err(e) => {
                             self.mensaje_notificacion = format!("Error al cargar preset: {}", e);
@@ -721,30 +1141,156 @@ impl EcualizadorIcedApp {
     }
 
     fn construir_barra_superior(&self) -> Element<'_, MensajeUi> {
-        let titulo = text("ALDRA POWERAMP EQUALIZER")
-            .size(20)
+        let titulo = text("ALDRA POWERAMP")
+            .size(17)
             .color(COLOR_AMBAR_SUNLIGHT);
 
-        let perfil = text(format!("Perfil: {}", self.estado_local.nombre_perfil))
-            .size(14)
-            .color(COLOR_TEXTO_ATENUADO);
-
-        let btn_bypass = toggler(
-            self.estado_local.ecualizador_activo,
+        // Boton Maestro EQU (On/Off)
+        let eq_on = self.estado_local.ecualizador_activo;
+        let btn_equ = button(
+            text(if eq_on { "EQU [ON]" } else { "EQU [BYP]" })
+                .size(11)
+                .color(if eq_on { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
         )
-        .label("DSP Activo")
-        .on_toggle(MensajeUi::ConmutarEcualizador);
+        .padding([4, 10])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if eq_on {
+                button::Style {
+                    background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                    border: Border { radius: 4.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { color: Color::from_rgba(0.3, 0.35, 0.45, 0.3), width: 1.0, radius: 4.0.into() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarEcualizador(!eq_on));
 
-        let btn_guardar = button(text("Exportar config.txt").size(13))
+        // Boton Maestro TONE (On/Off)
+        let tone_on = self.estado_local.tono.tono_activo;
+        let btn_tone = button(
+            text(if tone_on { "TONE [ON]" } else { "TONE [BYP]" })
+                .size(11)
+                .color(if tone_on { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([4, 10])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if tone_on {
+                button::Style {
+                    background: Some(Background::Color(COLOR_CIAN_ELECTRICO)),
+                    border: Border { radius: 4.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { color: Color::from_rgba(0.3, 0.35, 0.45, 0.3), width: 1.0, radius: 4.0.into() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarTono(!tone_on));
+
+        // Boton Maestro LIMIT (On/Off)
+        let lim_on = self.estado_local.limitador_activo;
+        let btn_limit = button(
+            text(if lim_on { "LIMIT [ON]" } else { "LIMIT [BYP]" })
+                .size(11)
+                .color(if lim_on { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([4, 10])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if lim_on {
+                button::Style {
+                    background: Some(Background::Color(COLOR_CHERRY_NEON)),
+                    border: Border { radius: 4.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { color: Color::from_rgba(0.3, 0.35, 0.45, 0.3), width: 1.0, radius: 4.0.into() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarLimitador(!lim_on));
+
+        // Boton Modo: Grafico vs Parametrico
+        let es_param = self.estado_local.modo_parametrico;
+        let btn_modo = button(
+            text(if es_param { "MODO: PARAMETRICO" } else { "MODO: GRAFICO" })
+                .size(11)
+                .color(COLOR_TEXTO_CLARO),
+        )
+        .padding([4, 10])
+        .style(move |_t: &Theme, _s: button::Status| {
+            button::Style {
+                background: Some(Background::Color(Color::from_rgb(0.12, 0.15, 0.22))),
+                border: Border {
+                    color: if es_param { COLOR_CIAN_ELECTRICO } else { COLOR_AMBAR_SUNLIGHT },
+                    width: 1.0,
+                    radius: 4.0.into(),
+                },
+                ..Default::default()
+            }
+        })
+        .on_press(MensajeUi::ConmutarModoParametrico(!es_param));
+
+        // Boton Preset Activo (Abre Pestaña de Presets & AutoEQ)
+        let btn_preset = button(
+            text(format!("Preset: {}", self.estado_local.nombre_perfil))
+                .size(11)
+                .color(COLOR_AMBAR_SUNLIGHT),
+        )
+        .padding([4, 10])
+        .style(|_t: &Theme, _s: button::Status| button::Style {
+            background: Some(Background::Color(Color::from_rgb(0.09, 0.11, 0.16))),
+            border: Border {
+                color: Color::from_rgba(0.96, 0.62, 0.04, 0.5),
+                width: 1.0,
+                radius: 4.0.into(),
+            },
+            ..Default::default()
+        })
+        .on_press(MensajeUi::CambiarEscena(EscenaActual::AutoEqDispositivos));
+
+        // Boton Reset Plano (0 dB)
+        let btn_reset = button(text("0 dB PLANO").size(11).color(COLOR_TEXTO_CLARO))
+            .padding([4, 8])
+            .style(|_t: &Theme, _s: button::Status| button::Style {
+                background: Some(Background::Color(Color::from_rgb(0.15, 0.18, 0.24))),
+                border: Border { radius: 4.0.into(), ..Default::default() },
+                ..Default::default()
+            })
+            .on_press(MensajeUi::ResetearPlano);
+
+        // Boton Exportar config.txt
+        let btn_exportar = button(text("APO config.txt").size(11).color(Color::BLACK))
+            .padding([4, 8])
+            .style(|_t: &Theme, _s: button::Status| button::Style {
+                background: Some(Background::Color(COLOR_CIAN_ELECTRICO)),
+                border: Border { radius: 4.0.into(), ..Default::default() },
+                ..Default::default()
+            })
             .on_press(MensajeUi::GuardarPresetApo);
 
         row![
-            column![titulo, perfil].spacing(2),
+            titulo,
             space::horizontal(),
-            btn_bypass,
-            btn_guardar,
+            btn_equ,
+            btn_tone,
+            btn_limit,
+            btn_modo,
+            btn_preset,
+            btn_reset,
+            btn_exportar,
         ]
-        .spacing(16)
+        .spacing(8)
         .align_y(iced::Alignment::Center)
         .into()
     }
@@ -780,7 +1326,7 @@ impl EcualizadorIcedApp {
         .on_press(MensajeUi::CambiarEscena(EscenaActual::Reverberacion));
 
         let btn_autoeq = button(
-            text("4. AutoEQ & Dispositivos")
+            text("4. Presets & AutoEQ")
                 .size(14)
                 .color(estilo_btn(self.escena_activa == EscenaActual::AutoEqDispositivos)),
         )
@@ -814,53 +1360,144 @@ impl EcualizadorIcedApp {
         .width(Length::Fill)
         .height(Length::Fixed(190.0));
 
-        // 2. Barra de Presets Rapidos de Fabrica (Poweramp Factory Presets)
-        let presets_nombres = [
-            "Plano (0 dB)",
-            "Bass Booster",
-            "Bass & Treble",
-            "Rock",
-            "Pop",
-            "Vocal / Voz Clara",
-            "Clasica",
-            "Club / Dance",
-            "Treble Booster",
-            "Harman Target",
-        ];
+        // 2. Barra de Presets Rapidos de Fabrica (Poweramp 23 Graficos + 8 Parametricos)
+        let es_param_presets = self.subpestana_presets_parametrico;
 
-        let mut fila_presets = row![].spacing(6);
-        for &p_nom in &presets_nombres {
-            let es_activo = self.estado_local.nombre_perfil.contains(p_nom);
-            let btn = button(
-                text(p_nom)
-                    .size(11)
-                    .color(if es_activo { Color::BLACK } else { COLOR_TEXTO_CLARO }),
-            )
-            .padding([4, 10])
-            .style(move |_t: &Theme, _s: button::Status| {
-                if es_activo {
-                    button::Style {
-                        background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
-                        border: Border {
-                            radius: 4.0.into(),
-                            ..Default::default()
-                        },
-                        ..Default::default()
-                    }
-                } else {
-                    button::Style {
-                        background: Some(Background::Color(Color::from_rgb(0.10, 0.13, 0.18))),
-                        border: Border {
-                            color: Color::from_rgba(0.3, 0.35, 0.45, 0.3),
-                            width: 1.0,
-                            radius: 4.0.into(),
-                        },
-                        ..Default::default()
-                    }
+        let btn_sel_graf = button(
+            text("GRAFICOS (23)")
+                .size(10)
+                .color(if !es_param_presets { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([3, 8])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if !es_param_presets {
+                button::Style {
+                    background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                    border: Border { radius: 3.0.into(), ..Default::default() },
+                    ..Default::default()
                 }
-            })
-            .on_press(MensajeUi::AplicarPresetFabrica(p_nom));
-            fila_presets = fila_presets.push(btn);
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { radius: 3.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarSubpestanaPresets(false));
+
+        let btn_sel_param = button(
+            text("PARAMETRICOS (8)")
+                .size(10)
+                .color(if es_param_presets { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([3, 8])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if es_param_presets {
+                button::Style {
+                    background: Some(Background::Color(COLOR_CIAN_ELECTRICO)),
+                    border: Border { radius: 3.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { radius: 3.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarSubpestanaPresets(true));
+
+        let btn_ver_todos = button(
+            text("+ BIBLIOTECA COMPLETA")
+                .size(10)
+                .color(COLOR_TEXTO_CLARO),
+        )
+        .padding([3, 8])
+        .style(|_t: &Theme, _s: button::Status| button::Style {
+            background: Some(Background::Color(Color::from_rgb(0.12, 0.15, 0.22))),
+            border: Border {
+                color: Color::from_rgba(0.96, 0.62, 0.04, 0.4),
+                width: 1.0,
+                radius: 3.0.into(),
+            },
+            ..Default::default()
+        })
+        .on_press(MensajeUi::CambiarEscena(EscenaActual::AutoEqDispositivos));
+
+        let mut fila_presets = row![btn_sel_graf, btn_sel_param, btn_ver_todos].spacing(6);
+
+        if !es_param_presets {
+            for p in &PRESETS_POWERAMP_GRAFICOS {
+                let p_nom = p.nombre;
+                let es_activo = self.estado_local.nombre_perfil.contains(p_nom);
+                let btn = button(
+                    text(p_nom)
+                        .size(11)
+                        .color(if es_activo { Color::BLACK } else { COLOR_TEXTO_CLARO }),
+                )
+                .padding([4, 10])
+                .style(move |_t: &Theme, _s: button::Status| {
+                    if es_activo {
+                        button::Style {
+                            background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                            border: Border {
+                                radius: 4.0.into(),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }
+                    } else {
+                        button::Style {
+                            background: Some(Background::Color(Color::from_rgb(0.10, 0.13, 0.18))),
+                            border: Border {
+                                color: Color::from_rgba(0.3, 0.35, 0.45, 0.3),
+                                width: 1.0,
+                                radius: 4.0.into(),
+                            },
+                            ..Default::default()
+                        }
+                    }
+                })
+                .on_press(MensajeUi::AplicarPresetFabrica(p_nom));
+                fila_presets = fila_presets.push(btn);
+            }
+        } else {
+            for p in &PRESETS_POWERAMP_PARAMETRICOS {
+                let p_nom = p.nombre;
+                let es_activo = self.estado_local.nombre_perfil.contains(p_nom);
+                let btn = button(
+                    text(p_nom)
+                        .size(11)
+                        .color(if es_activo { Color::BLACK } else { COLOR_TEXTO_CLARO }),
+                )
+                .padding([4, 10])
+                .style(move |_t: &Theme, _s: button::Status| {
+                    if es_activo {
+                        button::Style {
+                            background: Some(Background::Color(COLOR_CIAN_ELECTRICO)),
+                            border: Border {
+                                radius: 4.0.into(),
+                                ..Default::default()
+                            },
+                            ..Default::default()
+                        }
+                    } else {
+                        button::Style {
+                            background: Some(Background::Color(Color::from_rgb(0.10, 0.13, 0.18))),
+                            border: Border {
+                                color: Color::from_rgba(0.02, 0.71, 0.83, 0.3),
+                                width: 1.0,
+                                radius: 4.0.into(),
+                            },
+                            ..Default::default()
+                        }
+                    }
+                })
+                .on_press(MensajeUi::AplicarPresetParametrico(p_nom));
+                fila_presets = fila_presets.push(btn);
+            }
         }
 
         let barra_presets = scrollable(fila_presets).direction(scrollable::Direction::Horizontal(
@@ -1244,9 +1881,26 @@ impl EcualizadorIcedApp {
             ));
 
         // 6. Controles Maestros de Tono (Graves y Agudos estilo Poweramp)
+        let btn_reset_bass = button(text("0 dB").size(9).color(COLOR_TEXTO_CLARO))
+            .padding([2, 6])
+            .on_press(MensajeUi::CambiarTonoGraves(0.0));
+
+        let btn_reset_treble = button(text("0 dB").size(9).color(COLOR_TEXTO_CLARO))
+            .padding([2, 6])
+            .on_press(MensajeUi::CambiarTonoAgudos(0.0));
+
+        let tono_activo = self.estado_local.tono.tono_activo;
+        let etiqueta_estado_tono = if tono_activo {
+            text("TONO: ACTIVO").size(10).color(COLOR_CIAN_ELECTRICO)
+        } else {
+            text("TONO: BYPASS").size(10).color(COLOR_TEXTO_ATENUADO)
+        };
+
         let controles_tono = row![
             column![
-                text("BASS / GRAVES").size(12).color(COLOR_CIAN_ELECTRICO),
+                row![text("BASS / GRAVES").size(12).color(COLOR_CIAN_ELECTRICO), btn_reset_bass]
+                    .spacing(6)
+                    .align_y(iced::Alignment::Center),
                 row![
                     slider(
                         -12.0..=12.0,
@@ -1262,8 +1916,12 @@ impl EcualizadorIcedApp {
             ]
             .spacing(4),
             space::horizontal(),
+            etiqueta_estado_tono,
+            space::horizontal(),
             column![
-                text("TREBLE / AGUDOS").size(12).color(COLOR_CIAN_ELECTRICO),
+                row![text("TREBLE / AGUDOS").size(12).color(COLOR_CIAN_ELECTRICO), btn_reset_treble]
+                    .spacing(6)
+                    .align_y(iced::Alignment::Center),
                 row![
                     slider(
                         -12.0..=12.0,
@@ -1293,9 +1951,20 @@ impl EcualizadorIcedApp {
     fn construir_escena_espacio_compresor(&self) -> Element<'_, MensajeUi> {
         // Panel de Espacio Estereo
         let panel_espacio = column![
-            text("PROCESADOR ESPACIAL MID / SIDE")
-                .size(16)
-                .color(COLOR_AMBAR_SUNLIGHT),
+            row![
+                text("PROCESADOR ESPACIAL MID / SIDE")
+                    .size(16)
+                    .color(COLOR_AMBAR_SUNLIGHT),
+                space::horizontal(),
+                button(text("Centrar (0.0)").size(11))
+                    .on_press(MensajeUi::CambiarBalance(0.0)),
+                button(text("100% Normal").size(11))
+                    .on_press(MensajeUi::CambiarExpansionEstereo(1.0)),
+                button(text("130% Amplio").size(11))
+                    .on_press(MensajeUi::CambiarExpansionEstereo(1.3)),
+            ]
+            .align_y(iced::Alignment::Center)
+            .spacing(8),
             row![
                 column![
                     text("BALANCE L / R").size(12).color(COLOR_TEXTO_ATENUADO),
@@ -1340,6 +2009,18 @@ impl EcualizadorIcedApp {
 
         // Panel de Compresor Dinamico
         let comp = self.estado_local.compresor;
+        let presets_comp = row![
+            text("PRESETS RAPIDOS:").size(11).color(COLOR_TEXTO_ATENUADO),
+            button(text("Suave / Mastering").size(11))
+                .on_press(MensajeUi::AplicarPresetCompresor("Suave / Mastering")),
+            button(text("Pegada / Punch").size(11))
+                .on_press(MensajeUi::AplicarPresetCompresor("Pegada / Punch")),
+            button(text("Radio / Agresivo").size(11))
+                .on_press(MensajeUi::AplicarPresetCompresor("Radio / Agresivo")),
+        ]
+        .spacing(8)
+        .align_y(iced::Alignment::Center);
+
         let panel_compresor = column![
             row![
                 text("COMPRESOR DINAMICO ESTEREO")
@@ -1351,12 +2032,17 @@ impl EcualizadorIcedApp {
                     .on_toggle(MensajeUi::ConmutarCompresor),
             ]
             .align_y(iced::Alignment::Center),
-            text(format!(
-                "Reduccion de Ganancia Activa: -{:.1} dB",
-                self.reduccion_compresor_db
-            ))
-            .size(13)
-            .color(COLOR_CHERRY_NEON),
+            row![
+                text(format!(
+                    "Reduccion de Ganancia Activa: -{:.1} dB",
+                    self.reduccion_compresor_db
+                ))
+                .size(13)
+                .color(COLOR_CHERRY_NEON),
+                space::horizontal(),
+                presets_comp,
+            ]
+            .align_y(iced::Alignment::Center),
             row![
                 column![
                     text("Umbral (Threshold)").size(11),
@@ -1508,9 +2194,95 @@ impl EcualizadorIcedApp {
     }
 
     fn construir_escena_autoeq_dispositivos(&self) -> Element<'_, MensajeUi> {
-        // Seccion AutoEQ
+        // 1. Selector de Subpestana de Presets Oficiales de Poweramp
+        let es_param = self.subpestana_presets_parametrico;
+        let btn_pestana_graf = button(
+            text(format!("Presets Graficos ({})", PRESETS_POWERAMP_GRAFICOS.len()))
+                .size(12)
+                .color(if !es_param { COLOR_AMBAR_SUNLIGHT } else { COLOR_TEXTO_ATENUADO })
+        )
+        .on_press(MensajeUi::ConmutarSubpestanaPresets(false));
+
+        let btn_pestana_param = button(
+            text(format!("Presets Parametricos PEQ ({})", PRESETS_POWERAMP_PARAMETRICOS.len()))
+                .size(12)
+                .color(if es_param { COLOR_AMBAR_SUNLIGHT } else { COLOR_TEXTO_ATENUADO })
+        )
+        .on_press(MensajeUi::ConmutarSubpestanaPresets(true));
+
+        let btn_reset_plano = button(text("Reset 0 dB Plano").size(12))
+            .on_press(MensajeUi::ResetearPlano);
+
+        let selector_presets = row![
+            text("PRESETS OFICIALES POWERAMP:").size(13).color(COLOR_AMBAR_SUNLIGHT),
+            btn_pestana_graf,
+            btn_pestana_param,
+            space::horizontal(),
+            btn_reset_plano,
+        ]
+        .spacing(10)
+        .align_y(iced::Alignment::Center);
+
+        // Cuadricula / Lista de Tarjetas de Presets
+        let mut tarjetas_presets = column![].spacing(6);
+        if !es_param {
+            // 23 Presets Graficos Oficiales
+            for preset in PRESETS_POWERAMP_GRAFICOS.iter() {
+                let nombre = preset.nombre;
+                let preamp = preset.preamp_db;
+                let desc = preset.descripcion;
+                let es_actual = self.estado_local.nombre_perfil == nombre && !self.estado_local.modo_parametrico;
+
+                let fila = row![
+                    column![
+                        text(nombre).size(13).color(if es_actual { COLOR_AMBAR_SUNLIGHT } else { COLOR_TEXTO_CLARO }),
+                        text(format!("Preamp: {:+.1} dB | {}", preamp, desc)).size(11).color(COLOR_TEXTO_ATENUADO),
+                    ]
+                    .spacing(2)
+                    .width(Length::Fill),
+                    button(text(if es_actual { "Activo" } else { "Aplicar" }).size(11))
+                        .on_press(MensajeUi::AplicarPresetFabrica(nombre)),
+                ]
+                .align_y(iced::Alignment::Center)
+                .padding(4);
+
+                tarjetas_presets = tarjetas_presets.push(fila);
+            }
+        } else {
+            // 8 Presets Parametricos Oficiales
+            for preset in PRESETS_POWERAMP_PARAMETRICOS.iter() {
+                let nombre = preset.nombre;
+                let preamp = preset.preamp_db;
+                let desc = preset.descripcion;
+                let num_bandas = preset.bandas.len();
+                let es_actual = self.estado_local.nombre_perfil == nombre && self.estado_local.modo_parametrico;
+
+                let fila = row![
+                    column![
+                        text(nombre).size(13).color(if es_actual { COLOR_AMBAR_SUNLIGHT } else { COLOR_TEXTO_CLARO }),
+                        text(format!("{} bandas PEQ | Preamp: {:+.1} dB | {}", num_bandas, preamp, desc)).size(11).color(COLOR_TEXTO_ATENUADO),
+                    ]
+                    .spacing(2)
+                    .width(Length::Fill),
+                    button(text(if es_actual { "Activo" } else { "Aplicar PEQ" }).size(11))
+                        .on_press(MensajeUi::AplicarPresetParametrico(nombre)),
+                ]
+                .align_y(iced::Alignment::Center)
+                .padding(4);
+
+                tarjetas_presets = tarjetas_presets.push(fila);
+            }
+        }
+
+        let panel_presets = column![
+            selector_presets,
+            scrollable(tarjetas_presets).height(Length::Fixed(180.0)),
+        ]
+        .spacing(8);
+
+        // 2. Seccion AutoEQ (+20,531 modelos)
         let entrada_busqueda = text_input(
-            "Buscar modelo de auriculares (ej. Sony WH-1000XM4, HD650, JBL, AirPods)...",
+            "Buscar modelo de auriculares (ej. Sony WH-1000XM4, HD650, JBL, AirPods, Moondrop, KZ)...",
             &self.consulta_autoeq,
         )
         .on_input(MensajeUi::ConsultaAutoEqCambiada)
@@ -1520,15 +2292,20 @@ impl EcualizadorIcedApp {
         let btn_buscar = button(text("Buscar en DB").size(13))
             .on_press(MensajeUi::EjecutarBusquedaAutoEq);
 
-        let mut lista_auriculares = column![].spacing(6);
+        let mut lista_auriculares = column![].spacing(4);
         for item in &self.resultados_autoeq {
             let nombre = item.nombre_modelo.clone();
+            let clave = if item.desplazamiento_blob > 0 {
+                format!("@{}", item.desplazamiento_blob)
+            } else {
+                nombre.clone()
+            };
             let subtexto = format!(
                 "{} ({} bandas {})",
                 item.nombre_modelo,
                 item.numero_bandas,
                 if item.es_parametrico {
-                    "Parametrico"
+                    "Parametrico PEQ"
                 } else {
                     "Grafico"
                 }
@@ -1536,8 +2313,8 @@ impl EcualizadorIcedApp {
 
             let fila = row![
                 text(subtexto).size(12).width(Length::Fill),
-                button(text("Aplicar").size(11))
-                    .on_press(MensajeUi::CargarPerfilAutoEq(nombre)),
+                button(text("Cargar Perfil").size(11))
+                    .on_press(MensajeUi::CargarPerfilAutoEq(clave)),
             ]
             .align_y(iced::Alignment::Center)
             .padding(4);
@@ -1546,21 +2323,21 @@ impl EcualizadorIcedApp {
         }
 
         let panel_autoeq = column![
-            text("BASE DE DATOS AUTOEQ (+5,400 MODELOS)")
+            text("BASE DE DATOS AUTOEQ (+20,531 MODELOS DE AURICULARES)")
                 .size(15)
                 .color(COLOR_AMBAR_SUNLIGHT),
             row![entrada_busqueda, btn_buscar].spacing(8),
-            scrollable(lista_auriculares).height(Length::Fixed(150.0)),
+            scrollable(lista_auriculares).height(Length::Fixed(130.0)),
         ]
         .spacing(8);
 
-        // Seccion APO e Inyeccion de Audio en Windows
+        // 3. Seccion APO e Inyeccion de Audio en Windows & Dispositivos
         let estado_apo_txt = if self.estado_apo.apo_registrado {
             text("ESTADO: APO ACTIVO en audiodg.exe (El sonido de TODO Windows es procesado)")
                 .size(13)
                 .color(COLOR_AMBAR_SUNLIGHT)
         } else {
-            text("ESTADO: APO NO REGISTRADO (Solo modo visualizador / render local)")
+            text("ESTADO: APO NO REGISTRADO (Solo modo visualizador / render local o PipeWire Linux)")
                 .size(13)
                 .color(COLOR_CHERRY_NEON)
         };
@@ -1609,7 +2386,7 @@ impl EcualizadorIcedApp {
             text("DISPOSITIVOS DE AUDIO DETECTADOS (WASAPI)")
                 .size(13)
                 .color(COLOR_TEXTO_ATENUADO),
-            scrollable(lista_dispositivos).height(Length::Fixed(90.0)),
+            scrollable(lista_dispositivos).height(Length::Fixed(80.0)),
         ]
         .spacing(4);
 
@@ -1623,7 +2400,7 @@ impl EcualizadorIcedApp {
         ]
         .spacing(8);
 
-        column![panel_autoeq, space::vertical(), panel_sistema]
+        column![panel_presets, space::vertical(), panel_autoeq, space::vertical(), panel_sistema]
             .spacing(16)
             .into()
     }

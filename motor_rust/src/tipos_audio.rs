@@ -196,7 +196,7 @@ pub struct ParametrosTono {
 impl Default for ParametrosTono {
     fn default() -> Self {
         Self {
-            tono_activo: false,
+            tono_activo: true,
             graves_ganancia_db: 0.0,
             graves_frecuencia_hz: 90.0,
             graves_factor_q: 0.8,
