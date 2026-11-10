@@ -429,7 +429,7 @@ fn main() {
                     "--format=float32le",
                     "--rate=48000",
                     "--channels=2",
-                    "--latency-msec=10",
+                    "--latency-msec=25",
                 ])
                 .stdout(Stdio::piped())
                 .stderr(Stdio::null())
@@ -456,7 +456,7 @@ fn main() {
                     "--rate=48000",
                     "--channels=2",
                     "--raw",
-                    "--latency-msec=10",
+                    "--latency-msec=25",
                 ])
                 .stdin(Stdio::piped())
                 .stdout(Stdio::null())
@@ -544,7 +544,7 @@ fn main() {
             if let Some(ref mut proceso) = capturador_pipewire {
                 if let Some(ref mut salida) = proceso.stdout {
                     use std::io::Read;
-                    let mut bufer_bytes = [0u8; 4096];
+                    let mut bufer_bytes = [0u8; 8192];
                     if let Ok(leidos) = salida.read(&mut bufer_bytes) {
                         if leidos >= 8 {
                             bufer_pares_entrada.clear();
@@ -614,7 +614,17 @@ fn main() {
                     telemetria_hilo_dsp.publicar_espectro(&barras_cero, 0.0, -96.0);
                 }
             }
+
+            #[cfg(target_os = "windows")]
             thread::sleep(Duration::from_millis(12));
+
+            #[cfg(target_os = "linux")]
+            if !leyo_audio_real {
+                // Si no hay flujo de audio sonando, dormir brevemente para no consumir CPU en vacio
+                thread::sleep(Duration::from_millis(8));
+            }
+            // En Linux con audio activo: CERO SLEEP. El reloj del flujo de PipeWire/PulseAudio
+            // sincroniza de forma determinista y fluida el ritmo natural de 48,000 Hz.
         }
     });
 
