@@ -169,7 +169,7 @@ impl EcualizadorIcedApp {
             dispositivos_audio,
             id_dispositivo_seleccionado,
             usar_render_directo: false,
-            consulta_autoeq: String::from("JBL Tune"),
+            consulta_autoeq: String::new(),
             resultados_autoeq: Vec::new(),
             mensaje_notificacion: String::from("Motor DSP listo a 64 bits"),
             barras_espectro_suavizadas: [0.0; 64],

@@ -196,7 +196,7 @@ pub struct ParametrosTono {
 impl Default for ParametrosTono {
     fn default() -> Self {
         Self {
-            tono_activo: true,
+            tono_activo: false,
             graves_ganancia_db: 0.0,
             graves_frecuencia_hz: 90.0,
             graves_factor_q: 0.8,
@@ -249,8 +249,8 @@ pub struct ParametrosCompresor {
 impl Default for ParametrosCompresor {
     fn default() -> Self {
         Self {
-            activo: true,
-            limite_db: -6.0,
+            activo: false,
+            limite_db: 0.0,
             proporcion: 2.5,
             ataque_ms: 10.0,
             lanzamiento_ms: 100.0,

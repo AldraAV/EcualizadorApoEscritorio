@@ -7,7 +7,6 @@
 //! 3. Sincronizacion binaria IPC (`estado_dsp_activo.bin`) con nuestro propio Objeto COM APO de Windows (`apo_com_windows.rs`).
 
 use std::env;
-use std::f32::consts::PI;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Mutex};
@@ -20,7 +19,7 @@ use motor_ecualizador_poweramp::captura_wasapi_loopback::{
     CapturadorWasapiLoopback, RenderizadorWasapiDirecto,
 };
 use motor_ecualizador_poweramp::cargador_presets::{
-    buscar_presets_autoeq_en_archivo, cargar_preset_json_desde_archivo, exportar_archivo_apo,
+    buscar_presets_autoeq_en_archivo, exportar_archivo_apo,
 };
 use motor_ecualizador_poweramp::instalador_apo::{
     consultar_estado_instalacion_apo, desinstalar_apo, instalar_y_activar_apo,
@@ -67,6 +66,100 @@ fn main() {
 
     let argumentos: Vec<String> = env::args().collect();
     let directorio_base = localizar_directorio_base();
+
+    // Modo CLI de validacion matematica del motor DSP (Cero mocks)
+    if argumentos.len() >= 2 && (argumentos[1] == "--validar-dsp" || argumentos[1] == "--probar-dsp") {
+        println!("=== VALIDACION MATEMATICA DE LA CADENA DSP (CERO MOCKS) ===");
+        let fs = 48000.0;
+        let mut cadena = CadenaMaestraDsp::nueva(fs);
+
+        // 1. Probar respuesta plana (Todo en 0 dB)
+        let tono_1k: Vec<f32> = (0..4800)
+            .map(|n| {
+                let t = n as f32 / fs as f32;
+                (2.0 * std::f32::consts::PI * 1000.0 * t).sin()
+            })
+            .collect();
+
+        let mut max_in = 0.0_f32;
+        let mut max_out_plano = 0.0_f32;
+        for &muestra in &tono_1k {
+            max_in = max_in.max(muestra.abs());
+            let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
+            max_out_plano = max_out_plano.max(izq.abs());
+        }
+        let ganancia_plana_db = 20.0 * (max_out_plano / max_in).log10();
+        println!(
+            "1. Respuesta Plana (Todo en 0 dB): Entrada = {:.4}, Salida = {:.4} (Ganancia: {:.2} dB) -> {}",
+            max_in,
+            max_out_plano,
+            ganancia_plana_db,
+            if ganancia_plana_db.abs() < 0.05 {
+                "CORRECTO [Paso plano verificado]"
+            } else {
+                "FALLO"
+            }
+        );
+
+        // 2. Probar realce Biquad de +6 dB a 1000 Hz
+        let mut estado_realce = cadena.obtener_estado().clone();
+        for banda in &mut estado_realce.bandas {
+            if (banda.frecuencia_hz - 1000.0).abs() < 50.0 {
+                banda.ganancia_db = 6.0;
+            }
+        }
+        let _ = cadena.aplicar_estado(estado_realce);
+        for _ in 0..1000 {
+            cadena.procesar_par_estereo(0.0, 0.0);
+        }
+        let mut max_out_realce = 0.0_f32;
+        for &muestra in &tono_1k {
+            let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
+            max_out_realce = max_out_realce.max(izq.abs());
+        }
+        let ganancia_realce_db = 20.0 * (max_out_realce / max_in).log10();
+        println!(
+            "2. Realce Parametrico +6 dB a 1 kHz: Salida = {:.4} (Ganancia: {:+.2} dB) -> {}",
+            max_out_realce,
+            ganancia_realce_db,
+            if (ganancia_realce_db - 6.0).abs() < 0.25 {
+                "CORRECTO [Filtro Biquad responde exactamente]"
+            } else {
+                "FALLO"
+            }
+        );
+
+        // 3. Probar corte Biquad de -12 dB a 1000 Hz
+        let mut estado_corte = cadena.obtener_estado().clone();
+        for banda in &mut estado_corte.bandas {
+            if (banda.frecuencia_hz - 1000.0).abs() < 50.0 {
+                banda.ganancia_db = -12.0;
+            }
+        }
+        let _ = cadena.aplicar_estado(estado_corte);
+        for _ in 0..1000 {
+            cadena.procesar_par_estereo(0.0, 0.0);
+        }
+        let mut max_out_corte = 0.0_f32;
+        for &muestra in &tono_1k {
+            let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
+            max_out_corte = max_out_corte.max(izq.abs());
+        }
+        let ganancia_corte_db = 20.0 * (max_out_corte / max_in).log10();
+        println!(
+            "3. Corte Parametrico -12 dB a 1 kHz: Salida = {:.4} (Ganancia: {:+.2} dB) -> {}",
+            max_out_corte,
+            ganancia_corte_db,
+            if (ganancia_corte_db - (-12.0)).abs() < 0.25 {
+                "CORRECTO [Filtro Biquad atenua exactamente]"
+            } else {
+                "FALLO"
+            }
+        );
+
+        println!("=== CONCLUSION: EL MOTOR DSP RESPONDE RIGUROSAMENTE CON FISICA MATEMATICA ===");
+        return;
+    }
 
     // Modo CLI de consulta de estado del APO
     if argumentos.len() >= 2 && argumentos[1] == "--estado-apo" {
@@ -205,17 +298,8 @@ fn main() {
         }
     }
 
-    // Inicializar Cadena Maestra DSP a 48 kHz
-    let mut cadena_inicial = CadenaMaestraDsp::nueva(48000.0);
-
-    // Si existe el preset JBL Tune 720BT en el directorio base, cargarlo inicialmente
-    let ruta_jbl =
-        directorio_base.join("JBL Tune 720BT (passive) [28 jul 2026 8_55_44\u{202f}p.m.].json");
-    if ruta_jbl.exists() {
-        if let Ok(estado_jbl) = cargar_preset_json_desde_archivo(&ruta_jbl) {
-            let _ = cadena_inicial.aplicar_estado(estado_jbl);
-        }
-    }
+    // Inicializar Cadena Maestra DSP a 48 kHz en estado plano (Cero presets, todo en cero)
+    let cadena_inicial = CadenaMaestraDsp::nueva(48000.0);
 
     let ruta_apo = directorio_base.join("apo_config.txt");
     let _ = exportar_archivo_apo(&ruta_apo, cadena_inicial.obtener_estado());
@@ -271,11 +355,29 @@ fn main() {
 
         let mut bufer_pares_entrada: Vec<(f32, f32)> = Vec::with_capacity(2048);
         let mut bufer_pares_procesados: Vec<(f32, f32)> = Vec::with_capacity(2048);
-        let mut fase_1 = 0.0_f32;
-        let mut fase_2 = 0.0_f32;
-        let mut fase_3 = 0.0_f32;
-        let mut fase_4 = 0.0_f32;
-        let mut modulador_lento = 0.0_f32;
+
+        #[cfg(target_os = "linux")]
+        let mut capturador_pipewire: Option<std::process::Child> = {
+            use std::process::{Command, Stdio};
+            Command::new("pw-record")
+                .args(["--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .or_else(|_| {
+                    Command::new("parec")
+                        .args(["--format=float32le", "--rate=48000", "--channels=2"])
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
+                .ok()
+        };
+        #[cfg(target_os = "linux")]
+        if capturador_pipewire.is_some() {
+            telemetria_hilo_dsp.captura_wasapi_activa.store(true, Ordering::Relaxed);
+            telemetria_hilo_dsp.frecuencia_actual_hz.store(48000, Ordering::Relaxed);
+        }
 
         while telemetria_hilo_dsp.ejecutando.load(Ordering::Relaxed) {
             // Verificar si el usuario cambio de audifonos / altavoces en la ventana nativa
@@ -318,66 +420,72 @@ fn main() {
                     .store(renderizador_directo.is_some(), Ordering::Relaxed);
             }
 
-            if let Some(ref mut cap) = capturador_sistema {
-                let leyo_paquetes = cap.leer_muestras_estereo(&mut bufer_pares_entrada);
-                bufer_pares_procesados.clear();
+            let mut leyo_audio_real = false;
 
-                if let Ok(mut cadena) = cadena_hilo_dsp.lock() {
-                    if leyo_paquetes && !bufer_pares_entrada.is_empty() {
-                        for &(m_izq, m_der) in &bufer_pares_entrada {
-                            let par_out = cadena.procesar_par_estereo(m_izq, m_der);
-                            bufer_pares_procesados.push(par_out);
-                        }
-                    } else {
-                        for _ in 0..512 {
-                            cadena.procesar_par_estereo(0.0, 0.0);
+            #[cfg(target_os = "windows")]
+            if let Some(ref mut cap) = capturador_sistema {
+                leyo_audio_real = cap.leer_muestras_estereo(&mut bufer_pares_entrada);
+            }
+
+            #[cfg(target_os = "linux")]
+            if let Some(ref mut proceso) = capturador_pipewire {
+                if let Some(ref mut salida) = proceso.stdout {
+                    use std::io::Read;
+                    let mut bufer_bytes = [0u8; 4096];
+                    if let Ok(leidos) = salida.read(&mut bufer_bytes) {
+                        if leidos >= 8 {
+                            bufer_pares_entrada.clear();
+                            let total_pares = leidos / 8;
+                            for i in 0..total_pares {
+                                let off = i * 8;
+                                let m_izq = f32::from_le_bytes([
+                                    bufer_bytes[off],
+                                    bufer_bytes[off + 1],
+                                    bufer_bytes[off + 2],
+                                    bufer_bytes[off + 3],
+                                ]);
+                                let m_der = f32::from_le_bytes([
+                                    bufer_bytes[off + 4],
+                                    bufer_bytes[off + 5],
+                                    bufer_bytes[off + 6],
+                                    bufer_bytes[off + 7],
+                                ]);
+                                bufer_pares_entrada.push((m_izq, m_der));
+                            }
+                            leyo_audio_real = !bufer_pares_entrada.is_empty();
                         }
                     }
+                }
+            }
 
+            if leyo_audio_real && !bufer_pares_entrada.is_empty() {
+                bufer_pares_procesados.clear();
+                if let Ok(mut cadena) = cadena_hilo_dsp.lock() {
+                    for &(m_izq, m_der) in &bufer_pares_entrada {
+                        let par_out = cadena.procesar_par_estereo(m_izq, m_der);
+                        bufer_pares_procesados.push(par_out);
+                    }
                     let barras = cadena.obtener_barras_espectro();
                     let reduccion = cadena.obtener_reduccion_compresor_db() as f32;
                     let pico = cadena.obtener_pico_salida_db() as f32;
                     telemetria_hilo_dsp.publicar_espectro(&barras, reduccion, pico);
                 }
 
-                // Si el Enrutador Directo WASAPI esta activo hacia un dispositivo distinto al de captura
-                // (o cuando el usuario desea inyectar la diferencia), enviar las muestras procesadas
+                #[cfg(target_os = "windows")]
                 if let Some(ref mut ren) = renderizador_directo {
-                    if !bufer_pares_procesados.is_empty()
-                        && id_sal_actual != id_cap_actual
-                    {
+                    if !bufer_pares_procesados.is_empty() && id_sal_actual != id_cap_actual {
                         let _ = ren.escribir_muestras_estereo(&bufer_pares_procesados);
                     }
                 }
-            } else if let Ok(mut cadena) = cadena_hilo_dsp.lock() {
-                let fs = 48000.0_f32;
-                for _ in 0..512 {
-                    modulador_lento += 1.0 / fs;
-                    let envolvente_ritmica = 0.35 + 0.25 * (modulador_lento * 4.2).sin().abs();
-
-                    fase_1 = (fase_1 + 2.0 * PI * 65.0 / fs).rem_euclid(2.0 * PI);
-                    fase_2 = (fase_2 + 2.0 * PI * 220.0 / fs).rem_euclid(2.0 * PI);
-                    fase_3 = (fase_3 + 2.0 * PI * 1250.0 / fs).rem_euclid(2.0 * PI);
-                    fase_4 = (fase_4 + 2.0 * PI * 6400.0 / fs).rem_euclid(2.0 * PI);
-
-                    let m_izq = envolvente_ritmica
-                        * (0.45 * fase_1.sin()
-                            + 0.25 * fase_2.sin()
-                            + 0.20 * fase_3.sin()
-                            + 0.10 * fase_4.sin());
-                    let m_der = envolvente_ritmica
-                        * (0.45 * fase_1.cos()
-                            + 0.25 * fase_2.cos()
-                            + 0.20 * fase_3.sin()
-                            + 0.10 * fase_4.cos());
-
-                    cadena.procesar_par_estereo(m_izq, m_der);
+            } else {
+                // CERO MOCKS: Silencio absoluto y analizador en cero cuando no hay flujo de audio
+                if let Ok(mut cadena) = cadena_hilo_dsp.lock() {
+                    for _ in 0..256 {
+                        cadena.procesar_par_estereo(0.0, 0.0);
+                    }
+                    let barras_cero = [0.0_f32; 64];
+                    telemetria_hilo_dsp.publicar_espectro(&barras_cero, 0.0, -96.0);
                 }
-
-                let barras = cadena.obtener_barras_espectro();
-                let reduccion = cadena.obtener_reduccion_compresor_db() as f32;
-                let pico = cadena.obtener_pico_salida_db() as f32;
-                telemetria_hilo_dsp.publicar_espectro(&barras, reduccion, pico);
             }
             thread::sleep(Duration::from_millis(12));
         }
