@@ -39,7 +39,7 @@ use crate::instalador_apo::{
     solicitar_elevacion_administrador, EstadoInstalacionApo,
 };
 use crate::tipos_audio::{
-    EstadoCompletoDsp, ParametrosReverberacion,
+    BandaParametrica, EstadoCompletoDsp, ParametrosReverberacion, TipoFiltro,
 };
 use crate::ventana_nativa_win32::{EnrutamientoWasapiEstado, TelemetriaCompartidaVentana};
 
@@ -63,6 +63,32 @@ pub enum EscenaActual {
     EnrutamientoPipeWire = 4,
 }
 
+/// Localiza el archivo `auto_eq.db` en multiples rutas relativas y absolutas posibles.
+fn localizar_archivo_autoeq(base: &std::path::Path) -> Option<PathBuf> {
+    let mut candidatos = vec![
+        base.join("recursos").join("auto_eq.db"),
+        base.join("auto_eq.db"),
+        PathBuf::from("recursos/auto_eq.db"),
+        PathBuf::from("../recursos/auto_eq.db"),
+        PathBuf::from("../../recursos/auto_eq.db"),
+        PathBuf::from("/home/kali/EcualizadorApoEscritorio/recursos/auto_eq.db"),
+        PathBuf::from("/home/kali/EcualizadorApoEscritorio/motor_rust/recursos/auto_eq.db"),
+    ];
+    if let Ok(exe) = std::env::current_exe() {
+        if let Some(p) = exe.parent() {
+            candidatos.push(p.join("recursos").join("auto_eq.db"));
+            candidatos.push(p.join("auto_eq.db"));
+            if let Some(pp) = p.parent() {
+                candidatos.push(pp.join("recursos").join("auto_eq.db"));
+                if let Some(ppp) = pp.parent() {
+                    candidatos.push(ppp.join("recursos").join("auto_eq.db"));
+                }
+            }
+        }
+    }
+    candidatos.into_iter().find(|c| c.exists())
+}
+
 /// Mensajes de eventos e interacciones de la interfaz Iced.
 #[derive(Debug, Clone)]
 pub enum MensajeUi {
@@ -70,10 +96,16 @@ pub enum MensajeUi {
     TickAnimacion(std::time::Instant),
     ConmutarEcualizador(bool),
     ConmutarLimitador(bool),
+    ConmutarModoParametrico(bool),
     CambiarPreamp(f64),
     CambiarGananciaBanda(usize, f64),
     CambiarFrecuenciaBanda(usize, f64),
     CambiarFactorQBanda(usize, f64),
+    CambiarTipoFiltroBanda(usize, TipoFiltro),
+    SeleccionarBandaParaEdicion(usize),
+    AgregarBandaParametrica,
+    EliminarBandaParametrica(usize),
+    AplicarPresetFabrica(&'static str),
     ConmutarBanda(usize, bool),
     ConmutarTono(bool),
     CambiarTonoGraves(f64),
@@ -131,6 +163,7 @@ pub struct EcualizadorIcedApp {
     pico_salida_db: f32,
     estado_pipewire: EstadoEnrutadorPipeWire,
     pipewire_disponible: bool,
+    banda_seleccionada_idx: usize,
 }
 
 impl EcualizadorIcedApp {
@@ -178,6 +211,7 @@ impl EcualizadorIcedApp {
             pico_salida_db: -96.0,
             estado_pipewire,
             pipewire_disponible,
+            banda_seleccionada_idx: 0,
         };
 
         app.recalcular_curva_magnitud();
@@ -213,9 +247,8 @@ impl EcualizadorIcedApp {
     }
 
     fn ejecutar_busqueda_autoeq_inicial(&mut self) {
-        let ruta_db = self.directorio_base.join("recursos").join("auto_eq.db");
-        if ruta_db.exists() {
-            if let Ok(res) = buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 12) {
+        if let Some(ruta_db) = localizar_archivo_autoeq(&self.directorio_base) {
+            if let Ok(res) = buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 25) {
                 self.resultados_autoeq = res;
             }
         }
@@ -268,6 +301,101 @@ impl EcualizadorIcedApp {
             MensajeUi::ConmutarLimitador(activo) => {
                 self.estado_local.limitador_activo = activo;
                 self.sincronizar_dsp_e_ipc();
+            }
+            MensajeUi::ConmutarModoParametrico(modo) => {
+                self.estado_local.modo_parametrico = modo;
+                self.sincronizar_dsp_e_ipc();
+            }
+            MensajeUi::SeleccionarBandaParaEdicion(idx) => {
+                if idx < self.estado_local.bandas.len() {
+                    self.banda_seleccionada_idx = idx;
+                }
+            }
+            MensajeUi::CambiarTipoFiltroBanda(idx, tipo) => {
+                if idx < self.estado_local.bandas.len() {
+                    self.estado_local.bandas[idx].tipo = tipo;
+                    self.sincronizar_dsp_e_ipc();
+                }
+            }
+            MensajeUi::AgregarBandaParametrica => {
+                if self.estado_local.bandas.len() < 32 {
+                    let id = self.estado_local.bandas.len() + 1;
+                    let nueva = BandaParametrica::nueva(
+                        id,
+                        1000.0,
+                        1.41,
+                        0.0,
+                        TipoFiltro::PicoParametrico,
+                    );
+                    self.estado_local.bandas.push(nueva);
+                    self.banda_seleccionada_idx = self.estado_local.bandas.len() - 1;
+                    self.estado_local.modo_parametrico = true;
+                    self.sincronizar_dsp_e_ipc();
+                    self.mensaje_notificacion = format!("Banda {} agregada", id);
+                }
+            }
+            MensajeUi::EliminarBandaParametrica(idx) => {
+                if self.estado_local.bandas.len() > 1 && idx < self.estado_local.bandas.len() {
+                    self.estado_local.bandas.remove(idx);
+                    for (i, b) in self.estado_local.bandas.iter_mut().enumerate() {
+                        b.identificador = i + 1;
+                    }
+                    if self.banda_seleccionada_idx >= self.estado_local.bandas.len() {
+                        self.banda_seleccionada_idx = self.estado_local.bandas.len().saturating_sub(1);
+                    }
+                    self.sincronizar_dsp_e_ipc();
+                    self.mensaje_notificacion = String::from("Banda eliminada");
+                }
+            }
+            MensajeUi::AplicarPresetFabrica(nombre) => {
+                let presets_fabrica: [(&'static str, &[f64], f64); 10] = [
+                    ("Plano (0 dB)", &[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], 0.0),
+                    ("Bass Booster", &[7.5, 6.5, 4.5, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], -4.0),
+                    ("Bass & Treble", &[5.5, 4.5, 2.5, 0.0, -1.0, 0.0, 1.5, 3.5, 5.0, 6.0], -3.0),
+                    ("Rock", &[4.8, 3.2, -1.5, -2.8, -1.0, 1.5, 3.0, 4.0, 4.5, 5.0], -2.5),
+                    ("Pop", &[-1.5, 1.5, 3.5, 4.5, 3.0, -1.0, -1.5, -1.0, 2.0, 3.5], -2.0),
+                    ("Vocal / Voz Clara", &[-4.0, -2.5, 0.0, 2.5, 4.0, 4.5, 3.5, 1.5, 0.0, -2.0], -2.0),
+                    ("Clasica", &[4.5, 3.5, 2.5, 2.0, -1.5, -1.5, 0.0, 2.5, 3.5, 4.0], -2.0),
+                    ("Club / Dance", &[5.5, 4.5, 2.0, 0.0, -2.0, 2.0, 1.0, 3.5, 5.0, 5.5], -3.0),
+                    ("Treble Booster", &[0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 2.5, 4.5, 6.5, 8.0], -4.0),
+                    ("Harman Target", &[5.5, 4.0, 1.5, -1.0, -0.5, 0.0, 1.0, 3.5, 1.0, 0.0], -2.5),
+                ];
+
+                if let Some(&(_, ganancias, preamp)) = presets_fabrica.iter().find(|p| p.0 == nombre) {
+                    let frecs_iso = [31.5, 63.0, 125.0, 250.0, 500.0, 1000.0, 2000.0, 4000.0, 8000.0, 16000.0];
+                    if self.estado_local.bandas.len() != 10 {
+                        self.estado_local.bandas = frecs_iso
+                            .iter()
+                            .enumerate()
+                            .map(|(i, &f)| {
+                                BandaParametrica::nueva(
+                                    i + 1,
+                                    f,
+                                    1.41,
+                                    0.0,
+                                    if i == 0 {
+                                        TipoFiltro::EstanteGraves
+                                    } else if i == 9 {
+                                        TipoFiltro::EstanteAgudos
+                                    } else {
+                                        TipoFiltro::PicoParametrico
+                                    },
+                                )
+                            })
+                            .collect();
+                    }
+                    for (i, &g) in ganancias.iter().enumerate() {
+                        if i < self.estado_local.bandas.len() {
+                            self.estado_local.bandas[i].ganancia_db = g;
+                            self.estado_local.bandas[i].activo = true;
+                        }
+                    }
+                    self.estado_local.ganancia_preamp_db = preamp;
+                    self.estado_local.nombre_perfil = format!("Preset: {}", nombre);
+                    self.banda_seleccionada_idx = 0;
+                    self.sincronizar_dsp_e_ipc();
+                    self.mensaje_notificacion = format!("Preset '{}' aplicado con exito", nombre);
+                }
             }
             MensajeUi::CambiarPreamp(ganancia_db) => {
                 self.estado_local.ganancia_preamp_db = ganancia_db;
@@ -423,30 +551,44 @@ impl EcualizadorIcedApp {
                 self.consulta_autoeq = texto;
             }
             MensajeUi::EjecutarBusquedaAutoEq => {
-                let ruta_db = self.directorio_base.join("recursos").join("auto_eq.db");
-                if ruta_db.exists() {
-                    if let Ok(res) =
-                        buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 15)
-                    {
-                        self.resultados_autoeq = res;
-                        self.mensaje_notificacion = format!(
-                            "Se encontraron {} auriculares en auto_eq.db",
-                            self.resultados_autoeq.len()
-                        );
+                if let Some(ruta_db) = localizar_archivo_autoeq(&self.directorio_base) {
+                    match buscar_presets_autoeq_en_archivo(&ruta_db, &self.consulta_autoeq, 30) {
+                        Ok(res) => {
+                            let total = res.len();
+                            self.resultados_autoeq = res;
+                            self.mensaje_notificacion = format!(
+                                "Se encontraron {} perfiles en auto_eq.db para '{}'",
+                                total, self.consulta_autoeq
+                            );
+                        }
+                        Err(e) => {
+                            self.mensaje_notificacion = format!("Error al buscar: {}", e);
+                        }
                     }
+                } else {
+                    self.mensaje_notificacion = String::from("No se encontro auto_eq.db en el disco");
                 }
             }
             MensajeUi::CargarPerfilAutoEq(nombre_modelo) => {
-                let ruta_db = self.directorio_base.join("recursos").join("auto_eq.db");
-                if ruta_db.exists() {
-                    if let Ok(nuevo_estado) =
-                        cargar_preset_autoeq_por_consulta(&ruta_db, &nombre_modelo)
-                    {
-                        self.estado_local = nuevo_estado;
-                        self.sincronizar_dsp_e_ipc();
-                        self.mensaje_notificacion =
-                            format!("Perfil AutoEQ aplicado: {}", nombre_modelo);
+                if let Some(ruta_db) = localizar_archivo_autoeq(&self.directorio_base) {
+                    match cargar_preset_autoeq_por_consulta(&ruta_db, &nombre_modelo) {
+                        Ok(mut nuevo_estado) => {
+                            nuevo_estado.modo_parametrico = true;
+                            nuevo_estado.ecualizador_activo = true;
+                            self.estado_local = nuevo_estado;
+                            self.banda_seleccionada_idx = 0;
+                            self.sincronizar_dsp_e_ipc();
+                            self.mensaje_notificacion =
+                                format!("Perfil AutoEQ aplicado: {}", nombre_modelo);
+                            // Cambiar a la escena del ecualizador para ver inmediatamente los faders y la curva
+                            self.escena_activa = EscenaActual::Ecualizador;
+                        }
+                        Err(e) => {
+                            self.mensaje_notificacion = format!("Error al cargar preset: {}", e);
+                        }
                     }
+                } else {
+                    self.mensaje_notificacion = String::from("No se encontro auto_eq.db en el disco");
                 }
             }
             MensajeUi::SeleccionarDispositivoSalida(id) => {
@@ -672,7 +814,281 @@ impl EcualizadorIcedApp {
         .width(Length::Fill)
         .height(Length::Fixed(190.0));
 
-        // 2. Faders de bandas parametricas con estetica de consola de audio (Obsidian Rack)
+        // 2. Barra de Presets Rapidos de Fabrica (Poweramp Factory Presets)
+        let presets_nombres = [
+            "Plano (0 dB)",
+            "Bass Booster",
+            "Bass & Treble",
+            "Rock",
+            "Pop",
+            "Vocal / Voz Clara",
+            "Clasica",
+            "Club / Dance",
+            "Treble Booster",
+            "Harman Target",
+        ];
+
+        let mut fila_presets = row![].spacing(6);
+        for &p_nom in &presets_nombres {
+            let es_activo = self.estado_local.nombre_perfil.contains(p_nom);
+            let btn = button(
+                text(p_nom)
+                    .size(11)
+                    .color(if es_activo { Color::BLACK } else { COLOR_TEXTO_CLARO }),
+            )
+            .padding([4, 10])
+            .style(move |_t: &Theme, _s: button::Status| {
+                if es_activo {
+                    button::Style {
+                        background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                        border: Border {
+                            radius: 4.0.into(),
+                            ..Default::default()
+                        },
+                        ..Default::default()
+                    }
+                } else {
+                    button::Style {
+                        background: Some(Background::Color(Color::from_rgb(0.10, 0.13, 0.18))),
+                        border: Border {
+                            color: Color::from_rgba(0.3, 0.35, 0.45, 0.3),
+                            width: 1.0,
+                            radius: 4.0.into(),
+                        },
+                        ..Default::default()
+                    }
+                }
+            })
+            .on_press(MensajeUi::AplicarPresetFabrica(p_nom));
+            fila_presets = fila_presets.push(btn);
+        }
+
+        let barra_presets = scrollable(fila_presets).direction(scrollable::Direction::Horizontal(
+            scrollable::Scrollbar::default(),
+        ));
+
+        // 3. Barra de Control de Modo (Grafico vs Parametrico) y Boton de Agregar Banda
+        let es_param = self.estado_local.modo_parametrico;
+        let btn_modo_grafico = button(
+            text("MODO GRAFICO (10 BANDAS ISO)")
+                .size(11)
+                .color(if !es_param { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([4, 12])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if !es_param {
+                button::Style {
+                    background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                    border: Border { radius: 4.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { color: Color::from_rgba(0.25, 0.3, 0.4, 0.3), width: 1.0, radius: 4.0.into() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarModoParametrico(false));
+
+        let btn_modo_param = button(
+            text("MODO PARAMETRICO (Hz, Q, dB, Filtros)")
+                .size(11)
+                .color(if es_param { Color::BLACK } else { COLOR_TEXTO_ATENUADO }),
+        )
+        .padding([4, 12])
+        .style(move |_t: &Theme, _s: button::Status| {
+            if es_param {
+                button::Style {
+                    background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                    border: Border { radius: 4.0.into(), ..Default::default() },
+                    ..Default::default()
+                }
+            } else {
+                button::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.08, 0.10, 0.14))),
+                    border: Border { color: Color::from_rgba(0.25, 0.3, 0.4, 0.3), width: 1.0, radius: 4.0.into() },
+                    ..Default::default()
+                }
+            }
+        })
+        .on_press(MensajeUi::ConmutarModoParametrico(true));
+
+        let btn_agregar_banda = button(
+            text("+ AGREGAR BANDA")
+                .size(11)
+                .color(Color::BLACK),
+        )
+        .padding([4, 12])
+        .style(|_t: &Theme, _s: button::Status| button::Style {
+            background: Some(Background::Color(COLOR_CIAN_ELECTRICO)),
+            border: Border { radius: 4.0.into(), ..Default::default() },
+            ..Default::default()
+        })
+        .on_press(MensajeUi::AgregarBandaParametrica);
+
+        let barra_modos = row![
+            btn_modo_grafico,
+            btn_modo_param,
+            space::horizontal(),
+            if es_param {
+                Element::from(btn_agregar_banda)
+            } else {
+                Element::from(text(format!("Perfil: {}", self.estado_local.nombre_perfil)).size(12).color(COLOR_TEXTO_ATENUADO))
+            }
+        ]
+        .spacing(8)
+        .align_y(iced::Alignment::Center);
+
+        // 4. Panel Inspector de Banda Parametrica Seleccionada (solo visible en Modo Parametrico)
+        let inspector_banda: Option<Element<'_, MensajeUi>> = if es_param {
+            let idx_sel = self.banda_seleccionada_idx.min(self.estado_local.bandas.len().saturating_sub(1));
+            if let Some(banda_sel) = self.estado_local.bandas.get(idx_sel) {
+                let tipo_actual = banda_sel.tipo;
+                let tipos_disponibles = [
+                    (TipoFiltro::PicoParametrico, "Pico (Bell)"),
+                    (TipoFiltro::EstanteGraves, "Low Shelf"),
+                    (TipoFiltro::EstanteAgudos, "High Shelf"),
+                    (TipoFiltro::PasoBajo, "Low Pass"),
+                    (TipoFiltro::PasoAlto, "High Pass"),
+                    (TipoFiltro::PasoBanda, "Band Pass"),
+                ];
+
+                let mut fila_tipos = row![].spacing(4);
+                for (tipo, etiqueta) in tipos_disponibles {
+                    let es_tipo_activo = tipo == tipo_actual;
+                    let btn_tipo = button(
+                        text(etiqueta)
+                            .size(10)
+                            .color(if es_tipo_activo { Color::BLACK } else { COLOR_TEXTO_CLARO }),
+                    )
+                    .padding([3, 8])
+                    .style(move |_t: &Theme, _s: button::Status| {
+                        if es_tipo_activo {
+                            button::Style {
+                                background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                                border: Border { radius: 3.0.into(), ..Default::default() },
+                                ..Default::default()
+                            }
+                        } else {
+                            button::Style {
+                                background: Some(Background::Color(Color::from_rgb(0.12, 0.15, 0.20))),
+                                border: Border { color: Color::from_rgba(0.3, 0.35, 0.45, 0.3), width: 1.0, radius: 3.0.into() },
+                                ..Default::default()
+                            }
+                        }
+                    })
+                    .on_press(MensajeUi::CambiarTipoFiltroBanda(idx_sel, tipo));
+                    fila_tipos = fila_tipos.push(btn_tipo);
+                }
+
+                let btn_eliminar = button(
+                    text("Eliminar Banda X").size(10).color(Color::WHITE),
+                )
+                .padding([3, 8])
+                .style(|_t: &Theme, _s: button::Status| button::Style {
+                    background: Some(Background::Color(COLOR_CHERRY_NEON)),
+                    border: Border { radius: 3.0.into(), ..Default::default() },
+                    ..Default::default()
+                })
+                .on_press(MensajeUi::EliminarBandaParametrica(idx_sel));
+
+                let panel_editor = container(
+                    column![
+                        row![
+                            text(format!(
+                                "INSPECTOR PARAMETRICO: BANDA #{} ({:.0} Hz, {:+.1} dB, Q {:.2})",
+                                banda_sel.identificador,
+                                banda_sel.frecuencia_hz,
+                                banda_sel.ganancia_db,
+                                banda_sel.factor_q
+                            ))
+                            .size(12)
+                            .color(COLOR_AMBAR_SUNLIGHT),
+                            space::horizontal(),
+                            if self.estado_local.bandas.len() > 1 {
+                                Element::from(btn_eliminar)
+                            } else {
+                                Element::from(space::horizontal())
+                            }
+                        ]
+                        .align_y(iced::Alignment::Center),
+                        row![
+                            text("Tipo:").size(11).color(COLOR_TEXTO_ATENUADO),
+                            fila_tipos,
+                        ]
+                        .spacing(8)
+                        .align_y(iced::Alignment::Center),
+                        row![
+                            // Control de Frecuencia (20 a 20000 Hz)
+                            column![
+                                text(format!("Frecuencia: {:.0} Hz", banda_sel.frecuencia_hz))
+                                    .size(11)
+                                    .color(COLOR_CIAN_ELECTRICO),
+                                slider(
+                                    20.0..=20000.0,
+                                    banda_sel.frecuencia_hz,
+                                    move |hz| MensajeUi::CambiarFrecuenciaBanda(idx_sel, hz),
+                                )
+                                .step(1.0)
+                                .width(Length::Fixed(190.0)),
+                            ]
+                            .spacing(2),
+                            // Control de Factor Q (0.1 a 10.0)
+                            column![
+                                text(format!("Factor Q: {:.2}", banda_sel.factor_q))
+                                    .size(11)
+                                    .color(COLOR_CIAN_ELECTRICO),
+                                slider(
+                                    0.1..=10.0,
+                                    banda_sel.factor_q,
+                                    move |q| MensajeUi::CambiarFactorQBanda(idx_sel, q),
+                                )
+                                .step(0.05)
+                                .width(Length::Fixed(150.0)),
+                            ]
+                            .spacing(2),
+                            // Control de Ganancia (-24 a +24 dB)
+                            column![
+                                text(format!("Ganancia: {:+.1} dB", banda_sel.ganancia_db))
+                                    .size(11)
+                                    .color(COLOR_AMBAR_SUNLIGHT),
+                                slider(
+                                    -24.0..=24.0,
+                                    banda_sel.ganancia_db,
+                                    move |db| MensajeUi::CambiarGananciaBanda(idx_sel, db),
+                                )
+                                .step(0.1)
+                                .width(Length::Fixed(190.0)),
+                            ]
+                            .spacing(2),
+                        ]
+                        .spacing(16)
+                        .align_y(iced::Alignment::Center),
+                    ]
+                    .spacing(8),
+                )
+                .padding(10)
+                .style(|_t: &Theme| container::Style {
+                    background: Some(Background::Color(Color::from_rgb(0.05, 0.07, 0.11))),
+                    border: Border {
+                        color: Color::from_rgba(0.96, 0.62, 0.04, 0.4),
+                        width: 1.0,
+                        radius: 6.0.into(),
+                    },
+                    ..Default::default()
+                });
+
+                Some(panel_editor.into())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
+        // 5. Tira de Faders de Bandas (Obsidian Rack)
         let mut fila_bandas = row![].spacing(8);
 
         // Deslizador de Preamp Maestro
@@ -688,7 +1104,7 @@ impl EcualizadorIcedApp {
                     MensajeUi::CambiarPreamp,
                 )
                 .step(0.1)
-                .height(145.0),
+                .height(130.0),
                 text("-24").size(8).color(COLOR_TEXTO_ATENUADO),
                 button(text("0 dB").size(9).color(COLOR_TEXTO_CLARO))
                     .on_press(MensajeUi::CambiarPreamp(0.0)),
@@ -712,6 +1128,7 @@ impl EcualizadorIcedApp {
 
         fila_bandas = fila_bandas.push(strip_preamp);
 
+        let idx_seleccionada = self.banda_seleccionada_idx;
         for (idx, banda) in self.estado_local.bandas.iter().enumerate() {
             let etiqueta_frec = if banda.frecuencia_hz >= 1000.0 {
                 format!("{:.1}k", banda.frecuencia_hz / 1000.0)
@@ -743,9 +1160,39 @@ impl EcualizadorIcedApp {
                     .on_press(MensajeUi::ConmutarBanda(idx, true))
             };
 
+            let es_la_seleccionada = es_param && idx == idx_seleccionada;
             let esta_activa = banda.activo;
+
+            let btn_sel = if es_param {
+                button(
+                    text(format!("#{}", banda.identificador))
+                        .size(9)
+                        .color(if es_la_seleccionada { Color::BLACK } else { COLOR_TEXTO_CLARO }),
+                )
+                .padding([2, 6])
+                .style(move |_t: &Theme, _s: button::Status| {
+                    if es_la_seleccionada {
+                        button::Style {
+                            background: Some(Background::Color(COLOR_AMBAR_SUNLIGHT)),
+                            border: Border { radius: 3.0.into(), ..Default::default() },
+                            ..Default::default()
+                        }
+                    } else {
+                        button::Style {
+                            background: Some(Background::Color(Color::from_rgb(0.12, 0.15, 0.20))),
+                            border: Border { radius: 3.0.into(), ..Default::default() },
+                            ..Default::default()
+                        }
+                    }
+                })
+                .on_press(MensajeUi::SeleccionarBandaParaEdicion(idx))
+            } else {
+                button(text(format!("#{}", banda.identificador)).size(9).color(COLOR_TEXTO_ATENUADO))
+            };
+
             let strip_banda = container(
                 column![
+                    btn_sel,
                     text(texto_db).size(11).color(color_ganancia),
                     text("+12").size(8).color(Color::from_rgba(0.5, 0.55, 0.65, 0.3)),
                     slider(
@@ -754,7 +1201,7 @@ impl EcualizadorIcedApp {
                         move |val| MensajeUi::CambiarGananciaBanda(idx, val),
                     )
                     .step(0.1)
-                    .height(145.0),
+                    .height(130.0),
                     text("-24").size(8).color(Color::from_rgba(0.5, 0.55, 0.65, 0.3)),
                     btn_bypass,
                     text(etiqueta_frec)
@@ -769,14 +1216,20 @@ impl EcualizadorIcedApp {
             )
             .padding(6)
             .style(move |_t: &Theme| container::Style {
-                background: Some(Background::Color(Color::from_rgb(0.07, 0.09, 0.13))),
+                background: Some(Background::Color(if es_la_seleccionada {
+                    Color::from_rgb(0.09, 0.12, 0.18)
+                } else {
+                    Color::from_rgb(0.07, 0.09, 0.13)
+                })),
                 border: Border {
-                    color: if esta_activa {
+                    color: if es_la_seleccionada {
+                        COLOR_AMBAR_SUNLIGHT
+                    } else if esta_activa {
                         Color::from_rgba(0.25, 0.30, 0.40, 0.35)
                     } else {
                         Color::from_rgba(0.15, 0.18, 0.25, 0.2)
                     },
-                    width: 1.0,
+                    width: if es_la_seleccionada { 1.5 } else { 1.0 },
                     radius: 6.0.into(),
                 },
                 ..Default::default()
@@ -790,7 +1243,7 @@ impl EcualizadorIcedApp {
                 scrollable::Scrollbar::default(),
             ));
 
-        // 3. Controles de Tono (Graves y Agudos)
+        // 6. Controles Maestros de Tono (Graves y Agudos estilo Poweramp)
         let controles_tono = row![
             column![
                 text("BASS / GRAVES").size(12).color(COLOR_CIAN_ELECTRICO),
@@ -828,9 +1281,13 @@ impl EcualizadorIcedApp {
         ]
         .padding(8);
 
-        column![visualizador, panel_faders, controles_tono]
-            .spacing(12)
-            .into()
+        let mut contenido_columna = column![visualizador, barra_presets, barra_modos].spacing(10);
+        if let Some(inspector) = inspector_banda {
+            contenido_columna = contenido_columna.push(inspector);
+        }
+        contenido_columna = contenido_columna.push(panel_faders).push(controles_tono);
+
+        contenido_columna.into()
     }
 
     fn construir_escena_espacio_compresor(&self) -> Element<'_, MensajeUi> {

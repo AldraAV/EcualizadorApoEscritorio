@@ -106,6 +106,7 @@ extern "system" {
 }
 
 #[cfg(not(target_os = "windows"))]
+#[allow(non_snake_case)]
 unsafe fn CoTaskMemAlloc(cb: usize) -> *mut c_void {
     let disposicion = std::alloc::Layout::from_size_align(cb, 8).unwrap_or(std::alloc::Layout::new::<u8>());
     std::alloc::alloc(disposicion) as *mut c_void
