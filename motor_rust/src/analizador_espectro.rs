@@ -143,9 +143,13 @@ impl AnalizadorEspectroTiempoReal {
             }
             let mag_promedio = suma_mag / ((bin_fin - bin_ini) as f32);
 
-            // Normalizar a escala dBFS perceptual [0.0 .. 1.0]
+            // Normalizar a escala dBFS perceptual [0.0 .. 1.0] con puerta de silencio a -48 dBFS
             let db = 20.0 * (mag_promedio / (TAMANO_FFT as f32 * 0.25) + 1e-6).log10();
-            let normalizado = ((db + 60.0) / 60.0).clamp(0.0, 1.0);
+            let normalizado = if db < -48.0 {
+                0.0
+            } else {
+                ((db + 48.0) / 48.0).clamp(0.0, 1.0)
+            };
 
             let previo = self.magnitudes_suavizadas[barra];
             self.magnitudes_suavizadas[barra] =

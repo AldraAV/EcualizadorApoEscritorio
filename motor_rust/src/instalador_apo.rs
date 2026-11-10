@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 //! Modulo Instalador y Administrador del Windows Audio Processing Object (APO COM DLL) en Rust.
 //! Registra e inyecta `motor_ecualizador_poweramp.dll` directamente en el motor de audio de Windows (`audiodg.exe`)
 //! para que todo el sonido del sistema (navegadores, Spotify, juegos, reproductores) sea procesado

@@ -1416,7 +1416,14 @@ impl<Mensaje> canvas::Program<Mensaje> for EspectroCurvaCanvas {
         let ancho_barra = (paso_x * 0.75).max(1.5);
 
         for (i, &amplitud) in self.barras_espectro.iter().enumerate() {
-            let alt_barra = (amplitud.clamp(0.0, 1.0) * (h * 0.85)).max(2.0);
+            let alt_barra = if amplitud > 0.01 {
+                (amplitud.clamp(0.0, 1.0) * (h * 0.85)).max(1.0)
+            } else {
+                0.0
+            };
+            if alt_barra <= 0.0 {
+                continue;
+            }
             let x = (i as f32) * paso_x + (paso_x - ancho_barra) * 0.5;
             let y = h - alt_barra;
 

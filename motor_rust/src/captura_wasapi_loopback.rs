@@ -3,7 +3,9 @@
 //! 2. Captura en tiempo real del audio del navegador/sistema (`IAudioCaptureClient` con `AUDCLNT_STREAMFLAGS_LOOPBACK`).
 //! 3. Renderizado directo de baja latencia hacia los audifonos o altavoces (`IAudioRenderClient`).
 
+#[allow(unused_imports)]
 use std::ffi::c_void;
+#[allow(unused_imports)]
 use std::ptr;
 
 #[repr(C)]

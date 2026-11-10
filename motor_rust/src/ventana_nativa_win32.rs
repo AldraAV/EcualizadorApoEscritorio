@@ -1,3 +1,4 @@
+#![allow(unused_imports)]
 //! Interfaz Grafica de Escritorio 100% Nativa en Rust (Win32 + GDI Doble Bufer a 60 FPS).
 //! Reconstruida directamente a partir de los layouts AXML extraidos con REA de `Equalizador Poweramp.apk`:
 //! - `activity_peq_main.xml` (`PeqTopNavSceneFastLayout`, `MilkWidget`, `Navbar`)

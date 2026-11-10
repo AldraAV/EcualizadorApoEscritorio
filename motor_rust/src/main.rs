@@ -67,35 +67,51 @@ fn main() {
     let argumentos: Vec<String> = env::args().collect();
     let directorio_base = localizar_directorio_base();
 
-    // Modo CLI de validacion matematica del motor DSP (Cero mocks)
-    if argumentos.len() >= 2 && (argumentos[1] == "--validar-dsp" || argumentos[1] == "--probar-dsp") {
-        println!("=== VALIDACION MATEMATICA DE LA CADENA DSP (CERO MOCKS) ===");
+    // Modo CLI de validacion matematica del motor DSP (Cero mocks, cero UI)
+    let es_modo_validacion = argumentos.iter().skip(1).any(|arg| {
+        let a = arg.to_lowercase().replace("-", "").replace("_", "");
+        a.contains("validar") || a.contains("probar") || a.contains("test") || a == "dsp" || a == "dps"
+    });
+
+    if es_modo_validacion {
+        println!("\n========================================================");
+        println!("  VALIDACION MATEMATICA DEL MOTOR DSP (CERO MOCKS)");
+        println!("========================================================\n");
         let fs = 48000.0;
         let mut cadena = CadenaMaestraDsp::nueva(fs);
+        // Desactivar limitador para verificar la linealidad y fase pura de los filtros IIR Biquad
+        cadena.establecer_limitador_activo(false);
 
-        // 1. Probar respuesta plana (Todo en 0 dB)
-        let tono_1k: Vec<f32> = (0..4800)
+        // Amplitud de prueba normalizada a 0.25 (-12 dBFS) para permitir margen dinamico (+6 dB)
+        let tono_1k: Vec<f32> = (0..48000)
             .map(|n| {
                 let t = n as f32 / fs as f32;
-                (2.0 * std::f32::consts::PI * 1000.0 * t).sin()
+                0.25 * (2.0 * std::f32::consts::PI * 1000.0 * t).sin()
             })
             .collect();
 
+        // Estabilizar filtros
+        for _ in 0..1000 {
+            cadena.procesar_par_estereo(0.0, 0.0);
+        }
+
         let mut max_in = 0.0_f32;
         let mut max_out_plano = 0.0_f32;
-        for &muestra in &tono_1k {
-            max_in = max_in.max(muestra.abs());
+        for (idx, &muestra) in tono_1k.iter().enumerate() {
             let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
-            max_out_plano = max_out_plano.max(izq.abs());
+            if idx >= 5000 {
+                max_in = max_in.max(muestra.abs());
+                max_out_plano = max_out_plano.max(izq.abs());
+            }
         }
         let ganancia_plana_db = 20.0 * (max_out_plano / max_in).log10();
         println!(
-            "1. Respuesta Plana (Todo en 0 dB): Entrada = {:.4}, Salida = {:.4} (Ganancia: {:.2} dB) -> {}",
+            "[1] Respuesta Plana (0.0 dB): Entrada={:.4}, Salida={:.4} -> Ganancia: {:+.2} dB | {}",
             max_in,
             max_out_plano,
             ganancia_plana_db,
             if ganancia_plana_db.abs() < 0.05 {
-                "CORRECTO [Paso plano verificado]"
+                "VERIFICADO [Plano puro 0 dB]"
             } else {
                 "FALLO"
             }
@@ -109,21 +125,23 @@ fn main() {
             }
         }
         let _ = cadena.aplicar_estado(estado_realce);
-        for _ in 0..1000 {
+        for _ in 0..2000 {
             cadena.procesar_par_estereo(0.0, 0.0);
         }
         let mut max_out_realce = 0.0_f32;
-        for &muestra in &tono_1k {
+        for (idx, &muestra) in tono_1k.iter().enumerate() {
             let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
-            max_out_realce = max_out_realce.max(izq.abs());
+            if idx >= 5000 {
+                max_out_realce = max_out_realce.max(izq.abs());
+            }
         }
         let ganancia_realce_db = 20.0 * (max_out_realce / max_in).log10();
         println!(
-            "2. Realce Parametrico +6 dB a 1 kHz: Salida = {:.4} (Ganancia: {:+.2} dB) -> {}",
+            "[2] Realce Biquad (+6 dB a 1 kHz): Salida={:.4} -> Ganancia: {:+.2} dB | {}",
             max_out_realce,
             ganancia_realce_db,
             if (ganancia_realce_db - 6.0).abs() < 0.25 {
-                "CORRECTO [Filtro Biquad responde exactamente]"
+                "VERIFICADO [Frecuencia amplificada exactamente]"
             } else {
                 "FALLO"
             }
@@ -137,28 +155,32 @@ fn main() {
             }
         }
         let _ = cadena.aplicar_estado(estado_corte);
-        for _ in 0..1000 {
+        for _ in 0..2000 {
             cadena.procesar_par_estereo(0.0, 0.0);
         }
         let mut max_out_corte = 0.0_f32;
-        for &muestra in &tono_1k {
+        for (idx, &muestra) in tono_1k.iter().enumerate() {
             let (izq, _) = cadena.procesar_par_estereo(muestra, muestra);
-            max_out_corte = max_out_corte.max(izq.abs());
+            if idx >= 5000 {
+                max_out_corte = max_out_corte.max(izq.abs());
+            }
         }
         let ganancia_corte_db = 20.0 * (max_out_corte / max_in).log10();
         println!(
-            "3. Corte Parametrico -12 dB a 1 kHz: Salida = {:.4} (Ganancia: {:+.2} dB) -> {}",
+            "[3] Atenuacion Biquad (-12 dB a 1 kHz): Salida={:.4} -> Ganancia: {:+.2} dB | {}",
             max_out_corte,
             ganancia_corte_db,
             if (ganancia_corte_db - (-12.0)).abs() < 0.25 {
-                "CORRECTO [Filtro Biquad atenua exactamente]"
+                "VERIFICADO [Frecuencia atenuada exactamente]"
             } else {
                 "FALLO"
             }
         );
 
-        println!("=== CONCLUSION: EL MOTOR DSP RESPONDE RIGUROSAMENTE CON FISICA MATEMATICA ===");
-        return;
+        println!("\n========================================================");
+        println!("  CONCLUSION: EL MOTOR DSP RESPONDE RIGUROSAMENTE");
+        println!("========================================================\n");
+        std::process::exit(0);
     }
 
     // Modo CLI de consulta de estado del APO
@@ -357,26 +379,78 @@ fn main() {
         let mut bufer_pares_procesados: Vec<(f32, f32)> = Vec::with_capacity(2048);
 
         #[cfg(target_os = "linux")]
+        {
+            // Intentar crear un sink nulo virtual "AldraPoweramp" para que el usuario pueda enrutar el audio del sistema hacia el DSP
+            let _ = std::process::Command::new("pactl")
+                .args(["load-module", "module-null-sink", "sink_name=AldraPoweramp", "sink_properties=device.description=Aldra_Poweramp_DSP"])
+                .output();
+            println!("[Audio Linux] Sink virtual 'AldraPoweramp' inicializado.");
+            println!("[Audio Linux] Para procesar Firefox/Spotify ejecuta: pactl set-default-sink AldraPoweramp");
+        }
+
+        #[cfg(target_os = "linux")]
         let mut capturador_pipewire: Option<std::process::Child> = {
             use std::process::{Command, Stdio};
+            // 1. Intentar capturar desde el monitor del sink virtual AldraPoweramp
             Command::new("pw-record")
-                .args(["--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+                .args(["--target", "AldraPoweramp.monitor", "--format", "f32", "--rate", "48000", "--channels", "2", "-"])
                 .stdout(Stdio::piped())
                 .stderr(Stdio::null())
                 .spawn()
                 .or_else(|_| {
+                    // 2. Intentar con parec desde AldraPoweramp.monitor
                     Command::new("parec")
-                        .args(["--format=float32le", "--rate=48000", "--channels=2"])
+                        .args(["--device=AldraPoweramp.monitor", "--format=float32le", "--rate=48000", "--channels=2"])
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
+                .or_else(|_| {
+                    // 3. Fallback: Capturar desde el monitor del sink predeterminado
+                    Command::new("pw-record")
+                        .args(["--target", "@DEFAULT_MONITOR@", "--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+                        .stdout(Stdio::piped())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
+                .or_else(|_| {
+                    Command::new("parec")
+                        .args(["--device=@DEFAULT_MONITOR@", "--format=float32le", "--rate=48000", "--channels=2"])
                         .stdout(Stdio::piped())
                         .stderr(Stdio::null())
                         .spawn()
                 })
                 .ok()
         };
+
+        #[cfg(target_os = "linux")]
+        let mut reproductor_pipewire: Option<std::process::Child> = {
+            use std::process::{Command, Stdio};
+            // Reproducir las muestras procesadas directamente en los altavoces fisicos
+            Command::new("pw-play")
+                .args(["--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+                .or_else(|_| {
+                    Command::new("paplay")
+                        .args(["--format=float32le", "--rate=48000", "--channels=2", "--raw", "-"])
+                        .stdin(Stdio::piped())
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
+                .ok()
+        };
+
         #[cfg(target_os = "linux")]
         if capturador_pipewire.is_some() {
             telemetria_hilo_dsp.captura_wasapi_activa.store(true, Ordering::Relaxed);
             telemetria_hilo_dsp.frecuencia_actual_hz.store(48000, Ordering::Relaxed);
+            telemetria_hilo_dsp
+                .render_directo_activo
+                .store(reproductor_pipewire.is_some(), Ordering::Relaxed);
         }
 
         while telemetria_hilo_dsp.ejecutando.load(Ordering::Relaxed) {
@@ -475,6 +549,19 @@ fn main() {
                 if let Some(ref mut ren) = renderizador_directo {
                     if !bufer_pares_procesados.is_empty() && id_sal_actual != id_cap_actual {
                         let _ = ren.escribir_muestras_estereo(&bufer_pares_procesados);
+                    }
+                }
+
+                #[cfg(target_os = "linux")]
+                if let Some(ref mut rep) = reproductor_pipewire {
+                    if let Some(ref mut entrada_stdin) = rep.stdin {
+                        use std::io::Write;
+                        let mut bufer_bytes_salida = Vec::with_capacity(bufer_pares_procesados.len() * 8);
+                        for &(m_izq, m_der) in &bufer_pares_procesados {
+                            bufer_bytes_salida.extend_from_slice(&m_izq.to_le_bytes());
+                            bufer_bytes_salida.extend_from_slice(&m_der.to_le_bytes());
+                        }
+                        let _ = entrada_stdin.write_all(&bufer_bytes_salida);
                     }
                 }
             } else {

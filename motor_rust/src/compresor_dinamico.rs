@@ -169,8 +169,8 @@ impl LimitadorMaestroEstereo {
             1.0
         };
 
-        let izq_limitada = (muestra_izq * ganancia_limitador).tanh();
-        let der_limitada = (muestra_der * ganancia_limitador).tanh();
+        let izq_limitada = (muestra_izq * ganancia_limitador).clamp(-1.0, 1.0);
+        let der_limitada = (muestra_der * ganancia_limitador).clamp(-1.0, 1.0);
 
         (izq_limitada, der_limitada)
     }
