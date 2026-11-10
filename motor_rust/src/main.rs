@@ -379,43 +379,65 @@ fn main() {
         let mut bufer_pares_procesados: Vec<(f32, f32)> = Vec::with_capacity(2048);
 
         #[cfg(target_os = "linux")]
+        let sink_hardware = {
+            use std::process::Command;
+            let salida = Command::new("pactl").args(["list", "short", "sinks"]).output();
+            let mut encontrado = None;
+            if let Ok(sal) = salida {
+                let texto = String::from_utf8_lossy(&sal.stdout);
+                for linea in texto.lines() {
+                    let partes: Vec<&str> = linea.split_whitespace().collect();
+                    if partes.len() >= 2 {
+                        let nombre = partes[1];
+                        if !nombre.contains("AldraPoweramp") {
+                            encontrado = Some(nombre.to_string());
+                            break;
+                        }
+                    }
+                }
+            }
+            encontrado.unwrap_or_else(|| "alsa_output.pci-0000_02_02.0.analog-stereo".to_string())
+        };
+
+        #[cfg(target_os = "linux")]
         {
-            // Intentar crear un sink nulo virtual "AldraPoweramp" para que el usuario pueda enrutar el audio del sistema hacia el DSP
+            // Crear el sink nulo virtual AldraPoweramp si no existe
             let _ = std::process::Command::new("pactl")
-                .args(["load-module", "module-null-sink", "sink_name=AldraPoweramp", "sink_properties=device.description=Aldra_Poweramp_DSP"])
+                .args([
+                    "load-module",
+                    "module-null-sink",
+                    "sink_name=AldraPoweramp",
+                    "sink_properties=device.description=Aldra_Poweramp_DSP",
+                    "rate=48000",
+                ])
                 .output();
-            println!("[Audio Linux] Sink virtual 'AldraPoweramp' inicializado.");
-            println!("[Audio Linux] Para procesar Firefox/Spotify ejecuta: pactl set-default-sink AldraPoweramp");
+            // Desviar automaticamente la salida del sistema hacia AldraPoweramp
+            let _ = std::process::Command::new("pactl")
+                .args(["set-default-sink", "AldraPoweramp"])
+                .output();
+            println!("[Audio Linux] Dispositivo fisico detectado: {}", sink_hardware);
+            println!("[Audio Linux] Cadena activa: Sistema -> AldraPoweramp -> Rust DSP -> {}", sink_hardware);
         }
 
         #[cfg(target_os = "linux")]
         let mut capturador_pipewire: Option<std::process::Child> = {
             use std::process::{Command, Stdio};
-            // 1. Intentar capturar desde el monitor del sink virtual AldraPoweramp
-            Command::new("pw-record")
-                .args(["--target", "AldraPoweramp.monitor", "--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+            // 1. Usar parec oficial de PulseAudio/PipeWire conectado al monitor de AldraPoweramp
+            Command::new("parec")
+                .args([
+                    "--device=AldraPoweramp.monitor",
+                    "--format=float32le",
+                    "--rate=48000",
+                    "--channels=2",
+                    "--latency-msec=10",
+                ])
                 .stdout(Stdio::piped())
                 .stderr(Stdio::null())
                 .spawn()
                 .or_else(|_| {
-                    // 2. Intentar con parec desde AldraPoweramp.monitor
-                    Command::new("parec")
-                        .args(["--device=AldraPoweramp.monitor", "--format=float32le", "--rate=48000", "--channels=2"])
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::null())
-                        .spawn()
-                })
-                .or_else(|_| {
-                    // 3. Fallback: Capturar desde el monitor del sink predeterminado
+                    // 2. Fallback a pw-record sobre el nodo AldraPoweramp
                     Command::new("pw-record")
-                        .args(["--target", "@DEFAULT_MONITOR@", "--format", "f32", "--rate", "48000", "--channels", "2", "-"])
-                        .stdout(Stdio::piped())
-                        .stderr(Stdio::null())
-                        .spawn()
-                })
-                .or_else(|_| {
-                    Command::new("parec")
-                        .args(["--device=@DEFAULT_MONITOR@", "--format=float32le", "--rate=48000", "--channels=2"])
+                        .args(["--target", "AldraPoweramp", "--format", "f32", "--rate", "48000", "--channels", "2", "-"])
                         .stdout(Stdio::piped())
                         .stderr(Stdio::null())
                         .spawn()
@@ -426,16 +448,33 @@ fn main() {
         #[cfg(target_os = "linux")]
         let mut reproductor_pipewire: Option<std::process::Child> = {
             use std::process::{Command, Stdio};
-            // Reproducir las muestras procesadas directamente en los altavoces fisicos
-            Command::new("pw-play")
-                .args(["--format", "f32", "--rate", "48000", "--channels", "2", "-"])
+            // Reproducir las muestras procesadas directamente en el sink fisico del hardware
+            Command::new("paplay")
+                .args([
+                    &format!("--device={}", sink_hardware),
+                    "--format=float32le",
+                    "--rate=48000",
+                    "--channels=2",
+                    "--raw",
+                    "--latency-msec=10",
+                ])
                 .stdin(Stdio::piped())
                 .stdout(Stdio::null())
                 .stderr(Stdio::null())
                 .spawn()
                 .or_else(|_| {
-                    Command::new("paplay")
-                        .args(["--format=float32le", "--rate=48000", "--channels=2", "--raw", "-"])
+                    Command::new("pw-play")
+                        .args([
+                            "--target",
+                            &sink_hardware,
+                            "--format",
+                            "f32",
+                            "--rate",
+                            "48000",
+                            "--channels",
+                            "2",
+                            "-",
+                        ])
                         .stdin(Stdio::piped())
                         .stdout(Stdio::null())
                         .stderr(Stdio::null())
@@ -562,6 +601,7 @@ fn main() {
                             bufer_bytes_salida.extend_from_slice(&m_der.to_le_bytes());
                         }
                         let _ = entrada_stdin.write_all(&bufer_bytes_salida);
+                        let _ = entrada_stdin.flush();
                     }
                 }
             } else {
@@ -601,6 +641,24 @@ fn main() {
             directorio_base,
         ) {
             eprintln!("Error en la interfaz grafica Iced: {}", err);
+        }
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        // Restaurar el sink de altavoces original al cerrar la aplicacion
+        if let Ok(sal) = std::process::Command::new("pactl").args(["list", "short", "sinks"]).output() {
+            let texto = String::from_utf8_lossy(&sal.stdout);
+            for linea in texto.lines() {
+                let partes: Vec<&str> = linea.split_whitespace().collect();
+                if partes.len() >= 2 && !partes[1].contains("AldraPoweramp") {
+                    let _ = std::process::Command::new("pactl")
+                        .args(["set-default-sink", partes[1]])
+                        .output();
+                    println!("[Audio Linux] Audio del sistema restaurado a altavoces: {}", partes[1]);
+                    break;
+                }
+            }
         }
     }
 }
