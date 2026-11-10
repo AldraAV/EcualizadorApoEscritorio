@@ -55,6 +55,16 @@ fn localizar_base_datos_autoeq(base: &Path) -> PathBuf {
 }
 
 fn main() {
+    #[cfg(target_os = "linux")]
+    {
+        // En entornos Linux (especialmente maquinas virtuales o controladores Mesa/Vulkan basicos),
+        // el backend Vulkan puede fallar la validacion de shaders quad con SHADER_FLOAT16_IN_FLOAT32.
+        // Establecer OpenGL (EGL/GLX) por defecto garantiza compatibilidad universal.
+        if env::var("WGPU_BACKEND").is_err() {
+            env::set_var("WGPU_BACKEND", "gl");
+        }
+    }
+
     let argumentos: Vec<String> = env::args().collect();
     let directorio_base = localizar_directorio_base();
 
